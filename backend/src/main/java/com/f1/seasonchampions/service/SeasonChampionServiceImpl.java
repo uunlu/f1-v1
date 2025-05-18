@@ -1,6 +1,7 @@
 package com.f1.seasonchampions.service;
 
 import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
+import com.f1.seasonchampions.dto.DriverStandingsByYearResponseMRDataStandingsTableStandingsListsInnerDriverStandingsInner;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.f1.seasonchampions.model.Driver;
@@ -35,7 +36,32 @@ public class SeasonChampionServiceImpl implements SeasonChampionService {
             ResponseEntity<DriverStandingsByYearResponse> response = restTemplate.getForEntity(url, DriverStandingsByYearResponse.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                System.out.println(response.getBody());
+                var result = response.getBody();
+                assert result != null;
+                var table = result.getMrData().getStandingsTable();
+                var season = table.getSeason();
+                // TODO: replace get(0) with a stream map perphaps position == 1
+                var winner = table.getStandingsLists().get(0).getDriverStandings().get(0);
+                var driver = new Driver();
+                driver.setDriverId(winner.getDriver().getDriverId());
+                driver.setCode(winner.getDriver().getCode());
+                driver.setPermanentNumber(winner.getDriver().getPermanentNumber());
+                driver.setGivenName(winner.getDriver().getGivenName());
+                driver.setFamilyName(winner.getDriver().getFamilyName());
+                driver.setDateOfBirth(winner.getDriver().getDateOfBirth());
+                driver.setNationality(winner.getDriver().getNationality());
+
+                var constructor = new Constructor();
+                constructor.setConstructorId(winner.getConstructors().get(0).getConstructorId());
+                constructor.setName(winner.getConstructors().get(0).getName());
+                constructor.setNationality(winner.getConstructors().get(0).getNationality());
+
+                var champion = new SeasonChampion();
+                champion.setSeason(season);
+                champion.setDriver(driver);
+                champion.setConstructor(constructor);
+                System.out.println(champion);
+                champions.add(champion);
             }
 
         }
