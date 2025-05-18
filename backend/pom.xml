@@ -27,6 +27,16 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.2.32</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -37,6 +47,36 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>7.13.0</version>
+                <executions>
+                    <execution>
+                        <id>f1</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/ergan-openapi.yml</inputSpec>
+                            <modelPackage>com.f1.seasonchampions.dto</modelPackage>
+                            <generatorName>spring</generatorName>
+                            <generateApis>false</generateApis>
+                            <generateModels>true</generateModels>
+                            <generateModelDocumentation>false</generateModelDocumentation>
+                            <generateModelTests>false</generateModelTests>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+                            <configOptions>
+                                <sourceFolder>src/main/java</sourceFolder>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useOptional>true</useOptional>
+                                <openApiNullable>false</openApiNullable>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

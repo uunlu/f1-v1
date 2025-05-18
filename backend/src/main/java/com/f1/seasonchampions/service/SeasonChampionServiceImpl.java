@@ -1,5 +1,6 @@
 package com.f1.seasonchampions.service;
 
+import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.f1.seasonchampions.model.Driver;
@@ -31,58 +32,16 @@ public class SeasonChampionServiceImpl implements SeasonChampionService {
 
         for (int year = startYear; year <= endYear; year++) {
             String url = String.format("https://api.jolpi.ca/ergast/f1/%d/driverstandings/", year);
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            ResponseEntity<DriverStandingsByYearResponse> response = restTemplate.getForEntity(url, DriverStandingsByYearResponse.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                champions.add(parseChampionFromResponse(response.getBody(), year));
+                System.out.println(response.getBody());
             }
+
         }
 
         return champions;
     }
 
-    private SeasonChampion parseChampionFromResponse(String responseBody, int year) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(responseBody);
 
-            JsonNode driverNode = rootNode.path("MRData")
-                                          .path("StandingsTable")
-                                          .path("StandingsLists")
-                                          .get(0)
-                                          .path("DriverStandings")
-                                          .get(0)
-                                          .path("Driver");
-
-            JsonNode constructorNode = rootNode.path("MRData")
-                                               .path("StandingsTable")
-                                               .path("StandingsLists")
-                                               .get(0)
-                                               .path("DriverStandings")
-                                               .get(0)
-                                               .path("Constructors")
-                                               .get(0);
-
-            Driver driver = new Driver(
-                driverNode.path("driverId").asText(),
-                driverNode.path("permanentNumber").asText(),
-                driverNode.path("code").asText(),
-                driverNode.path("givenName").asText(),
-                driverNode.path("familyName").asText(),
-                driverNode.path("dateOfBirth").asText(),
-                driverNode.path("nationality").asText()
-            );
-
-            Constructor constructor = new Constructor(
-                constructorNode.path("constructorId").asText(),
-                constructorNode.path("name").asText(),
-                constructorNode.path("nationality").asText()
-            );
-
-            return new SeasonChampion(year, driver, constructor);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error parsing API response for year " + year, e);
-        }
-    }
 } 
