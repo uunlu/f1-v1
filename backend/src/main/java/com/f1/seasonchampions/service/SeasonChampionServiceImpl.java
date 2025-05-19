@@ -47,15 +47,14 @@ public class SeasonChampionServiceImpl implements SeasonChampionService {
         List<SeasonChampion> champions = new ArrayList<>();
 
         for (int year = request.getStartYear(); year <= request.getEndYear(); year++) {
-            final int currentYear = year;
             try {
-                SeasonChampion champion = fetchChampionForYear(currentYear);
+                SeasonChampion champion = fetchChampionForYear(year);
                 if (champion != null) {
                     champions.add(champion);
-                    log.debug("Successfully fetched champion for year {}: {}", currentYear, champion);
+                    log.debug("Successfully fetched champion for year {}: {}", year, champion);
                 }
             } catch (Exception e) {
-                log.error("Failed to fetch champion for year {}: {}", currentYear, e.getMessage(), e);
+                log.error("Failed to fetch champion for year {}: {}", year, e.getMessage(), e);
             }
         }
 
@@ -133,7 +132,11 @@ public class SeasonChampionServiceImpl implements SeasonChampionService {
             return Collections.emptyList();
         }
 
-        return result.getMrData().getRaceTable().getRaces().stream()
+        return result.
+                getMrData()
+                .getRaceTable()
+                .getRaces()
+                .stream()
                 .map(race -> {
                     var results = race.getResults();
                     if (results == null || results.isEmpty()) {
