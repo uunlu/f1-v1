@@ -1,10 +1,11 @@
 package com.f1.seasonchampions.service;
 
 import com.f1.seasonchampions.dto.*;
-import com.f1.seasonchampions.model.RaceWinner;
-import com.f1.seasonchampions.model.Driver;
+import com.f1.seasonchampions.model.*;
 import com.f1.seasonchampions.model.Constructor;
-import com.f1.seasonchampions.model.SeasonChampion;
+import com.f1.seasonchampions.model.Driver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,7 +24,9 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@Validated
 public class SeasonChampionServiceImpl implements SeasonChampionService {
+    private static final Logger logger = LoggerFactory.getLogger(SeasonChampionServiceImpl.class);
 
     private final RestTemplate restTemplate;
     private final RetryTemplate retryTemplate;
@@ -34,10 +38,15 @@ public class SeasonChampionServiceImpl implements SeasonChampionService {
     }
 
     @Override
-    public List<SeasonChampion> getSeasonChampions(int startYear, int endYear) {
+    public List<SeasonChampion> getSeasonChampions(SeasonRangeRequest request) {
+        // Logical validation (in case startYear > endYear)
+        if (request.getStartYear() > request.getEndYear()) {
+            throw new IllegalArgumentException("Start year cannot be greater than end year");
+        }
+
         List<SeasonChampion> champions = new ArrayList<>();
 
-        for (int year = startYear; year <= endYear; year++) {
+        for (int year = request.getStartYear(); year <= request.getEndYear(); year++) {
             final int currentYear = year;
             try {
                 SeasonChampion champion = fetchChampionForYear(currentYear);
@@ -45,13 +54,13 @@ public class SeasonChampionServiceImpl implements SeasonChampionService {
                     champions.add(champion);
                 }
             } catch (Exception e) {
-                // Log the error but continue with the next year
-                System.err.println("Failed to fetch champion for year " + currentYear + ": " + e.getMessage());
+                logger.error("Failed to fetch champion for year {}: {}", currentYear, e.getMessage());
             }
         }
 
         return champions;
     }
+
 
     @Retryable(value = RestClientException.class, maxAttempts = 3,
             backoff = @Backoff(delay = 1000, multiplier = 2))
