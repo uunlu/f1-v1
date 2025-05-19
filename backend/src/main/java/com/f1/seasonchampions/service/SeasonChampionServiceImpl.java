@@ -1,7 +1,7 @@
 package com.f1.seasonchampions.service;
 
-import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
-import com.f1.seasonchampions.dto.DriverStandingsByYearResponseMRDataStandingsTableStandingsListsInnerDriverStandingsInner;
+import com.f1.seasonchampions.dto.*;
+import com.f1.seasonchampions.model.RaceWinner;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.f1.seasonchampions.model.Driver;
@@ -15,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class SeasonChampionServiceImpl implements SeasonChampionService {
@@ -69,5 +72,44 @@ public class SeasonChampionServiceImpl implements SeasonChampionService {
         return champions;
     }
 
+    @Override
+    public List<RaceWinner> getRaceWinners(int year) {
+        String url = String.format("https://api.jolpi.ca/ergast/f1/%d/results/", year);
+        ResponseEntity<ResultsByYearResponse> response = restTemplate.getForEntity(url, ResultsByYearResponse.class);
+        ResultsByYearResponse result = response.getBody();
+
+        if (result == null || result.getMrData() == null || result.getMrData().getRaceTable() == null) {
+            return Collections.emptyList();
+        }
+
+        return result.getMrData().getRaceTable().getRaces().stream()
+                .map(race -> {
+                    var results = race.getResults();
+                    if (results == null || results.isEmpty()) {
+                        return null;
+                    }
+
+                    var winnerResult = results.get(0);  // Assuming index 0 is the winner
+                    var raceWinner = new RaceWinner();
+                    raceWinner.setRound(race.getRound());
+                    raceWinner.setSeason(race.getSeason());
+                    raceWinner.setTime(race.getTime());
+
+                    var constructor = winnerResult.getConstructor();
+                    if (constructor != null) {
+                        var raceConstructor = new Constructor();
+                        raceConstructor.setConstructorId(constructor.getConstructorId());
+                        raceConstructor.setName(constructor.getName());
+                        raceConstructor.setNationality(constructor.getNationality());
+                        raceWinner.setConstructor(raceConstructor);
+                    }
+
+                    // Optionally add more info like race name or winning driver here
+
+                    return raceWinner;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
 
 } 

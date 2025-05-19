@@ -1,5 +1,6 @@
 package com.f1.seasonchampions.controller;
 
+import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.service.SeasonChampionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,5 +25,11 @@ public class SeasonChampionController {
             @RequestParam(defaultValue = "2005") int startYear,
             @RequestParam(defaultValue = "2024") int endYear) {
         return seasonChampionService.getSeasonChampions(startYear, endYear);
+    }
+
+    @GetMapping("/api/results")
+    public List<RaceWinner> getRaceResults(
+            @RequestParam(defaultValue = "2005") int year) {
+        return seasonChampionService.getRaceWinners(year);
     }
 } 
