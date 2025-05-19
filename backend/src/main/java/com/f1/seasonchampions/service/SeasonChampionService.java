@@ -2,6 +2,7 @@ package com.f1.seasonchampions.service;
 
 import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
 import com.f1.seasonchampions.dto.ResultsByYearResponse;
+import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.*;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
@@ -38,20 +39,16 @@ public class SeasonChampionService {
         log.info("Fetching season champions from {} to {}", request.getStartYear(), request.getEndYear());
         
         if (request.getStartYear() > request.getEndYear()) {
-            throw new IllegalArgumentException("Start year cannot be greater than end year");
+            throw new InvalidInputException("Start year cannot be greater than end year");
         }
 
         List<SeasonChampion> champions = new ArrayList<>();
 
         for (int year = request.getStartYear(); year <= request.getEndYear(); year++) {
-            try {
-                SeasonChampion champion = fetchChampionForYear(year);
-                if (champion != null) {
-                    champions.add(champion);
-                    log.debug("Successfully fetched champion for year {}: {}", year, champion);
-                }
-            } catch (Exception e) {
-                log.error("Failed to fetch champion for year {}: {}", year, e.getMessage(), e);
+            SeasonChampion champion = fetchChampionForYear(year);
+            if (champion != null) {
+                champions.add(champion);
+                log.debug("Successfully fetched champion for year {}: {}", year, champion);
             }
         }
 

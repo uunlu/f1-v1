@@ -1,6 +1,7 @@
 package com.f1.seasonchampions.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,15 +20,16 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     // Create a standard error response structure
+    @Getter
     private static class ApiError {
-        private final LocalDateTime timestamp;
+        private final Instant timestamp;
         private final int status;
         private final String error;
         private final String message;
         private final Map<String, String> details;
 
         public ApiError(HttpStatus status, String message) {
-            this.timestamp = LocalDateTime.now();
+            this.timestamp = Instant.now();
             this.status = status.value();
             this.error = status.getReasonPhrase();
             this.message = message;
@@ -36,27 +39,6 @@ public class GlobalExceptionHandler {
         // Add a validation error detail
         public void addValidationError(String field, String message) {
             details.put(field, message);
-        }
-
-        // Getters
-        public LocalDateTime getTimestamp() {
-            return timestamp;
-        }
-
-        public int getStatus() {
-            return status;
-        }
-
-        public String getError() {
-            return error;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public Map<String, String> getDetails() {
-            return details;
         }
     }
 
@@ -91,8 +73,8 @@ public class GlobalExceptionHandler {
     }
 
     // For logical validation errors
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex) {
+    @ExceptionHandler(InvalidInputException.class)
+    public ResponseEntity<ApiError> handleIllegalArgument(InvalidInputException ex) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Invalid argument");
         apiError.addValidationError("error", ex.getMessage());
 

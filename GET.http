@@ -2,4 +2,4 @@
 GET http://localhost:8080/api/results
 
 ###
-GET http://localhost:8080/api/season-champions?startYear=2005&endYear=2020
+GET http://localhost:8080/api/season-champions?startYear=1945&endYear=2020
