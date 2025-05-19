@@ -198,4 +198,7 @@ dependency-reduced-pom.xml
 README.html
 *.iml
 .idea
-.exercism
+.exercis
+
+*id_ed25519*.*
+*id_ed*
