@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +26,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @Tag(name = "F1 Season Champions", description = "APIs for retrieving F1 season champions and race winners")
+@RequiredArgsConstructor
 public class SeasonChampionController {
 
     private final SeasonChampionService seasonChampionService;
-
-    @Autowired
-    public SeasonChampionController(SeasonChampionService seasonChampionService) {
-        this.seasonChampionService = seasonChampionService;
-    }
 
     @GetMapping("/season-champions")
     @Operation(summary = "Get season champions", description = "Retrieves F1 season champions for a given year range")
