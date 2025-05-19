@@ -2,6 +2,8 @@ package com.f1.seasonchampions.service;
 
 import com.f1.seasonchampions.dto.*;
 import com.f1.seasonchampions.model.*;
+import com.f1.seasonchampions.model.Constructor;
+import com.f1.seasonchampions.model.Driver;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
