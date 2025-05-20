@@ -6,6 +6,10 @@ import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.*;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
+import com.f1.seasonchampions.repository.ConstructorRepository;
+import com.f1.seasonchampions.repository.DriverRepository;
+import com.f1.seasonchampions.repository.RaceWinnerRepository;
+import com.f1.seasonchampions.repository.SeasonChampionRepository;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
@@ -35,9 +39,22 @@ public class SeasonChampionService {
     private static final String API_BASE_URL = "https://api.jolpi.ca/ergast/f1";
     private final RestTemplate restTemplate;
 
+    private final SeasonChampionRepository seasonChampionRepository;
+    private final RaceWinnerRepository raceWinnerRepository;
+    private final DriverRepository driverRepository;
+    private final ConstructorRepository constructorRepository;
+
     @Autowired
-    public SeasonChampionService(RestTemplateBuilder restTemplateBuilder) {
+    public SeasonChampionService(RestTemplateBuilder restTemplateBuilder,
+                                 SeasonChampionRepository seasonChampionRepository,
+                                 RaceWinnerRepository raceWinnerRepository,
+                                 DriverRepository driverRepository,
+                                 ConstructorRepository constructorRepository) {
         this.restTemplate = restTemplateBuilder.build();
+        this.seasonChampionRepository = seasonChampionRepository;
+        this.raceWinnerRepository = raceWinnerRepository;
+        this.driverRepository = driverRepository;
+        this.constructorRepository = constructorRepository;
     }
 
     public List<SeasonChampion> getSeasonChampions(SeasonRangeRequest request) {

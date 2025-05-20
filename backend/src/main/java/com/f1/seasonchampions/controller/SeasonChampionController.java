@@ -3,6 +3,10 @@ package com.f1.seasonchampions.controller;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
+import com.f1.seasonchampions.repository.ConstructorRepository;
+import com.f1.seasonchampions.repository.DriverRepository;
+import com.f1.seasonchampions.repository.RaceWinnerRepository;
+import com.f1.seasonchampions.repository.SeasonChampionRepository;
 import com.f1.seasonchampions.service.SeasonChampionService;
 import com.f1.seasonchampions.validation.CurrentYearConstraint;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +34,8 @@ import java.util.List;
 public class SeasonChampionController {
 
     private final SeasonChampionService seasonChampionService;
+
+
 
     @GetMapping("/season-champions")
     @Operation(summary = "Get season champions", description = "Retrieves F1 season champions for a given year range")
