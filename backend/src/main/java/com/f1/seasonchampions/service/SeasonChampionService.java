@@ -6,6 +6,9 @@ import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.*;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -19,10 +22,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -37,18 +42,38 @@ public class SeasonChampionService {
 
     public List<SeasonChampion> getSeasonChampions(SeasonRangeRequest request) {
         log.info("Fetching season champions from {} to {}", request.getStartYear(), request.getEndYear());
-        
+
         if (request.getStartYear() > request.getEndYear()) {
             throw new InvalidInputException("Start year cannot be greater than end year");
         }
 
+        // TODO: replace magic numbers with constants
+        RateLimiterConfig config = RateLimiterConfig.custom()
+                .limitRefreshPeriod(Duration.ofSeconds(1))
+                .limitForPeriod(1)
+                .timeoutDuration(Duration.ofSeconds(5))
+                .build();
+
+        RateLimiterRegistry registry = RateLimiterRegistry.of(config);
+        RateLimiter rateLimiter = registry.rateLimiter("apiRateLimiter");
+
         List<SeasonChampion> champions = new ArrayList<>();
 
         for (int year = request.getStartYear(); year <= request.getEndYear(); year++) {
-            SeasonChampion champion = fetchChampionForYear(year);
-            if (champion != null) {
-                champions.add(champion);
-                log.debug("Successfully fetched champion for year {}: {}", year, champion);
+            final int currentYear = year;
+
+            // Wrap the API call with rate limiter
+            Supplier<SeasonChampion> rateLimitedCall = RateLimiter
+                    .decorateSupplier(rateLimiter, () -> fetchChampionForYear(currentYear));
+
+            try {
+                SeasonChampion champion = rateLimitedCall.get();
+                if (champion != null) {
+                    champions.add(champion);
+                    log.debug("Successfully fetched champion for year {}: {}", currentYear, champion);
+                }
+            } catch (Exception e) {
+                log.error("Failed to fetch champion for year {}: {}", currentYear, e.getMessage());
             }
         }
 
@@ -61,13 +86,13 @@ public class SeasonChampionService {
     private SeasonChampion fetchChampionForYear(int year) {
         String url = String.format("%s/%d/driverstandings/", API_BASE_URL, year);
         log.debug("Fetching champion data from URL: {}", url);
-        
+
         ResponseEntity<DriverStandingsByYearResponse> response = restTemplate.getForEntity(url, DriverStandingsByYearResponse.class);
 
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
             return parseSeasonChampion(response.getBody());
         }
-        
+
         log.warn("No champion data found for year {}", year);
         return null;
     }
