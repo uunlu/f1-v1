@@ -7,6 +7,7 @@ import com.f1.seasonchampions.repository.ConstructorRepository;
 import com.f1.seasonchampions.repository.DriverRepository;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import com.f1.seasonchampions.repository.SeasonChampionRepository;
+import com.f1.seasonchampions.service.ChampionService;
 import com.f1.seasonchampions.service.SeasonChampionService;
 import com.f1.seasonchampions.validation.CurrentYearConstraint;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +35,7 @@ import java.util.List;
 public class SeasonChampionController {
 
     private final SeasonChampionService seasonChampionService;
+    private final ChampionService championService;
 
 
 
@@ -55,7 +57,7 @@ public class SeasonChampionController {
 
         log.info("Received request for season champions from {} to {}", startYear, endYear);
         var request = new SeasonRangeRequest(startYear, endYear);
-        var champions = seasonChampionService.getSeasonChampions(request);
+        var champions = championService.getSeasonChampions(request);
         log.info("Returning {} season champions", champions.size());
         return ResponseEntity.ok(champions);
     }
