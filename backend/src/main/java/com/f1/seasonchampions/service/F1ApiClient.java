@@ -16,7 +16,7 @@ public class F1ApiClient {
 
     private final RestTemplate restTemplate;
 
-    @Value("${f1api.base-url}")
+    @Value("https://api.jolpi.ca/ergast/")
     private String baseUrl;
 
     /**
@@ -29,7 +29,7 @@ public class F1ApiClient {
         log.info("Fetching F1 champion data for year: {}", year);
 
         try {
-            String url = String.format("%s/drivers/champions/%d", baseUrl, year);
+            String url = String.format("%s/f1/%d/driverstandings/", baseUrl, year);
 
             // This assumes the API returns a response that can be directly mapped to SeasonChampion
             // In practice, you might need to map from a different DTO structure
