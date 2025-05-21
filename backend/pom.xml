@@ -88,7 +88,33 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Testing -->
+        <!-- PostgreSQL JDBC Driver -->
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <!-- Flyway -->
+        <dependency>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-core</artifactId>
+          <version>11.8.2</version>
+        </dependency>
+
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-database-postgresql</artifactId>
+        <version>11.8.2</version>
+      </dependency>
+
+        <!-- Spring Boot Starter JDBC -->
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+
+      <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
