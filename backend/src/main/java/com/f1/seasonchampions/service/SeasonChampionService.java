@@ -1,14 +1,12 @@
 package com.f1.seasonchampions.service;
 
 import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
-import com.f1.seasonchampions.dto.ResultsByYearResponse;
 import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.*;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.repository.ConstructorRepository;
 import com.f1.seasonchampions.repository.DriverRepository;
-import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import com.f1.seasonchampions.repository.SeasonChampionRepository;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
@@ -20,17 +18,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -40,19 +34,16 @@ public class SeasonChampionService {
     private final RestTemplate restTemplate;
 
     private final SeasonChampionRepository seasonChampionRepository;
-    private final RaceWinnerRepository raceWinnerRepository;
     private final DriverRepository driverRepository;
     private final ConstructorRepository constructorRepository;
 
     @Autowired
     public SeasonChampionService(RestTemplateBuilder restTemplateBuilder,
                                  SeasonChampionRepository seasonChampionRepository,
-                                 RaceWinnerRepository raceWinnerRepository,
                                  DriverRepository driverRepository,
                                  ConstructorRepository constructorRepository) {
         this.restTemplate = restTemplateBuilder.build();
         this.seasonChampionRepository = seasonChampionRepository;
-        this.raceWinnerRepository = raceWinnerRepository;
         this.driverRepository = driverRepository;
         this.constructorRepository = constructorRepository;
     }
@@ -141,63 +132,5 @@ public class SeasonChampionService {
         );
 
         return new SeasonChampion(season, driver, constructor);
-    }
-
-    public List<RaceWinner> getRaceWinners(int year) {
-        log.info("Fetching race winners for year {}", year);
-        try {
-            return fetchRaceWinnersForYear(year);
-        } catch (Exception e) {
-            log.error("Failed to fetch race winners for year {}: {}", year, e.getMessage(), e);
-            return Collections.emptyList();
-        }
-    }
-
-    @Retryable(value = RestClientException.class, maxAttempts = 3,
-            backoff = @Backoff(delay = 1000, multiplier = 2))
-    private List<RaceWinner> fetchRaceWinnersForYear(int year) {
-        String url = String.format("%s/%d/results/", API_BASE_URL, year);
-        log.debug("Fetching race results from URL: {}", url);
-        
-        ResponseEntity<ResultsByYearResponse> response = restTemplate.getForEntity(url, ResultsByYearResponse.class);
-        ResultsByYearResponse result = response.getBody();
-
-        if (result == null || result.getMrData() == null || result.getMrData().getRaceTable() == null) {
-            log.warn("Invalid response format for race results");
-            return Collections.emptyList();
-        }
-
-        return result.
-                getMrData()
-                .getRaceTable()
-                .getRaces()
-                .stream()
-                .map(race -> {
-                    var results = race.getResults();
-                    if (results == null || results.isEmpty()) {
-                        log.warn("No results found for race {}", race.getRound());
-                        return null;
-                    }
-
-                    var winnerResult = results.get(0);
-                    var raceWinner = new RaceWinner();
-                    raceWinner.setRound(race.getRound());
-                    raceWinner.setSeason(race.getSeason());
-                    raceWinner.setTime(race.getTime());
-
-                    var constructor = winnerResult.getConstructor();
-                    if (constructor != null) {
-                        var raceConstructor = new Constructor(
-                            constructor.getConstructorId(),
-                            constructor.getName(),
-                            constructor.getNationality()
-                        );
-                        raceWinner.setConstructor(raceConstructor);
-                    }
-
-                    return raceWinner;
-                })
-                .filter(Objects::nonNull)
-                .toList();
     }
 }

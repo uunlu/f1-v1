@@ -3,12 +3,8 @@ package com.f1.seasonchampions.controller;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import com.f1.seasonchampions.repository.ConstructorRepository;
-import com.f1.seasonchampions.repository.DriverRepository;
-import com.f1.seasonchampions.repository.RaceWinnerRepository;
-import com.f1.seasonchampions.repository.SeasonChampionRepository;
 import com.f1.seasonchampions.service.ChampionService;
-import com.f1.seasonchampions.service.SeasonChampionService;
+import com.f1.seasonchampions.service.RaceWinnerService;
 import com.f1.seasonchampions.validation.CurrentYearConstraint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,7 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,11 +28,8 @@ import java.util.List;
 @Tag(name = "F1 Season Champions", description = "APIs for retrieving F1 season champions and race winners")
 @RequiredArgsConstructor
 public class SeasonChampionController {
-
-    private final SeasonChampionService seasonChampionService;
     private final ChampionService championService;
-
-
+    private final RaceWinnerService raceWinnerService;
 
     @GetMapping("/season-champions")
     @Operation(summary = "Get season champions", description = "Retrieves F1 season champions for a given year range")
@@ -74,7 +66,7 @@ public class SeasonChampionController {
             @RequestParam(defaultValue = "2005") int year) {
 
         log.info("Received request for race winners for year {}", year);
-        var winners = seasonChampionService.getRaceWinners(year);
+        var winners = raceWinnerService.getRaceWinners(year);
         log.info("Returning {} race winners", winners.size());
         return ResponseEntity.ok(winners);
     }
