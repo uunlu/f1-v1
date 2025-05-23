@@ -20,58 +20,53 @@ import java.util.stream.Collectors;
 @Primary
 @Slf4j
 public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChampionService {
-    private final LocalSeasonChampionService localService;
-    private final RemoteSeasonChampionService remoteService;
 
-    @Override
-    @Transactional
-    public List<SeasonChampion> getSeasonChampions(SeasonRangeRequest request) {
-        if (request.getStartYear() > request.getEndYear()) {
-            throw new InvalidInputException("Start year cannot be greater than end year");
-        }
+  private final LocalSeasonChampionService localService;
+  private final RemoteSeasonChampionService remoteService;
 
-        // Check if we have all data locally
-        if (localService.hasCompleteDataForRange(request)) {
-            log.info("Returning champions from local database");
-            return localService.getSeasonChampions(request);
-        }
-
-        // Get what we have locally
-        List<SeasonChampion> localChampions = localService.getSeasonChampions(request);
-        Set<String> existingSeasons = localChampions.stream()
-                .map(SeasonChampion::getSeason)
-                .collect(Collectors.toSet());
-
-        List<SeasonChampion> result = new ArrayList<>(localChampions);
-
-        // Fetch missing years from remote
-        for (int year = request.getStartYear(); year <= request.getEndYear(); year++) {
-            String yearStr = String.valueOf(year);
-            if (existingSeasons.contains(yearStr)) {
-                continue;
-            }
-
-            // Create a single year request
-            SeasonRangeRequest singleYearRequest = new SeasonRangeRequest(year, year);
-            List<SeasonChampion> remoteChampions = remoteService.getSeasonChampions(singleYearRequest);
-
-            for (SeasonChampion champion : remoteChampions) {
-                // Save to local database
-                SeasonChampion savedChampion = localService.saveChampion(champion);
-                result.add(savedChampion);
-            }
-        }
-
-        // Sort by season
-        result.sort(Comparator.comparing(SeasonChampion::getSeason));
-
-        log.info("Retrieved {} champions from combined sources", result.size());
-        return result;
+  @Override
+  @Transactional
+  public List<SeasonChampion> getSeasonChampions(final SeasonRangeRequest request) {
+    if (request.getStartYear() > request.getEndYear()) {
+      throw new InvalidInputException("Start year cannot be greater than end year");
     }
 
-    @Override
-    @Transactional
-    public SeasonChampion saveChampion(SeasonChampion champion) {
-        return localService.saveChampion(champion);
+    if (this.localService.hasCompleteDataForRange(request)) {
+      log.info("Returning champions from local database");
+      return this.localService.getSeasonChampions(request);
     }
+
+    final List<SeasonChampion> localChampions = this.localService.getSeasonChampions(request);
+    final Set<String> existingSeasons = localChampions.stream()
+      .map(SeasonChampion::getSeason)
+      .collect(Collectors.toSet());
+
+    final List<SeasonChampion> result = new ArrayList<>(localChampions);
+
+    for (int year = request.getStartYear(); year <= request.getEndYear(); year++) {
+      final String yearStr = String.valueOf(year);
+      if (existingSeasons.contains(yearStr)) {
+        continue;
+      }
+
+      final SeasonRangeRequest singleYearRequest = new SeasonRangeRequest(year, year);
+      final List<SeasonChampion> remoteChampions = this.remoteService.getSeasonChampions(singleYearRequest);
+
+      for (final SeasonChampion champion : remoteChampions) {
+        final SeasonChampion savedChampion = this.localService.saveChampion(champion);
+        result.add(savedChampion);
+      }
+    }
+
+    result.sort(Comparator.comparing(SeasonChampion::getSeason));
+
+    log.info("Retrieved {} champions from combined sources", result.size());
+    return result;
+  }
+
+  @Override
+  @Transactional
+  public SeasonChampion saveChampion(final SeasonChampion champion) {
+    return this.localService.saveChampion(champion);
+  }
 }
