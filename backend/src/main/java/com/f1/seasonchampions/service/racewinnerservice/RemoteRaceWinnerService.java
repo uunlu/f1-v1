@@ -32,6 +32,8 @@ import java.util.function.Supplier;
 public class RemoteRaceWinnerService implements RaceWinnerService {
   private static final int MAX_PAGES = 50;
   private static final int MAX_TOTAL = 1000;
+  private static final int DEFAULT_LIMIT = 100;
+  private static final int RETRY_BACKOFF_DELAY_MS = 1000;
 
   private final RestTemplate restTemplate;
   private RateLimiter rateLimiter;
@@ -41,67 +43,63 @@ public class RemoteRaceWinnerService implements RaceWinnerService {
 
   @PostConstruct
   public void init() {
-    RateLimiterConfig config = RateLimiterConfig.custom()
+    final RateLimiterConfig config = RateLimiterConfig.custom()
       .limitRefreshPeriod(Duration.ofSeconds(1))
       .limitForPeriod(1)
       .timeoutDuration(Duration.ofSeconds(5))
       .build();
 
-    RateLimiterRegistry registry = RateLimiterRegistry.of(config);
-    rateLimiter = registry.rateLimiter("raceWinnerApiRateLimiter");
+    final RateLimiterRegistry registry = RateLimiterRegistry.of(config);
+    this.rateLimiter = registry.rateLimiter("raceWinnerApiRateLimiter");
   }
 
   @Override
-  public List<RaceWinner> getRaceWinners(int year) {
+  public List<RaceWinner> getRaceWinners(final int year) {
     log.info("Fetching race winners from remote API for year: {}", year);
 
-    Supplier<List<RaceWinner>> rateLimitedCall = RateLimiter
-      .decorateSupplier(rateLimiter, () -> fetchRaceWinnersForYear(year));
+    final Supplier<List<RaceWinner>> rateLimitedCall =
+      RateLimiter.decorateSupplier(this.rateLimiter, () -> this.fetchRaceWinnersForYear(year));
 
     try {
       return rateLimitedCall.get();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       log.error("Failed to fetch race winners for year {}: {}", year, e.getMessage());
       return Collections.emptyList();
     }
   }
 
   @Override
-  public RaceWinner saveRaceWinner(RaceWinner winner) {
-    // Remote service doesn't save anything
-    return winner;
+  public RaceWinner saveRaceWinner(final RaceWinner winner) {
+    return winner; // Remote service doesn't save anything
   }
 
   @Override
-  public boolean hasCompleteDataForYear(int year) {
-    // Remote service always attempts to fetch fresh data
-    return false;
+  public boolean hasCompleteDataForYear(final int year) {
+    return false; // Remote service always attempts to fetch fresh data
   }
 
-
-
   @Retryable(value = RestClientException.class, maxAttempts = 3,
-    backoff = @Backoff(delay = 1000, multiplier = 2))
-  private List<RaceWinner> fetchRaceWinnersForYear(int year) {
+    backoff = @Backoff(delay = RETRY_BACKOFF_DELAY_MS, multiplier = 2))
+  private List<RaceWinner> fetchRaceWinnersForYear(final int year) {
     int offset = 0;
-    int limit = 100;
+    final int limit = DEFAULT_LIMIT;
     int total = Integer.MAX_VALUE;
-    List<RaceWinner> allWinners = new ArrayList<>();
+    final List<RaceWinner> allWinners = new ArrayList<>();
     int pageCount = 0;
 
     while (offset < total && pageCount < MAX_PAGES) {
-      String url = String.format("%s/%d/results.json?limit=%d&offset=%d", apiBaseUrl, year, limit, offset);
+      final String url = String.format("%s/%d/results.json?limit=%d&offset=%d", this.apiBaseUrl, year, limit, offset);
       log.debug("Fetching race results from URL: {}", url);
 
-      ResponseEntity<ResultsByYearResponse> response;
+      final ResponseEntity<ResultsByYearResponse> response;
       try {
-        response = restTemplate.getForEntity(url, ResultsByYearResponse.class);
-      } catch (RestClientException e) {
+        response = this.restTemplate.getForEntity(url, ResultsByYearResponse.class);
+      } catch (final RestClientException e) {
         log.error("Request failed at offset {}: {}", offset, e.getMessage());
         break;
       }
 
-      ResultsByYearResponse result = response.getBody();
+      final ResultsByYearResponse result = response.getBody();
       if (result == null || result.getMrData() == null || result.getMrData().getRaceTable() == null) {
         log.warn("Invalid or empty response at offset {}", offset);
         break;
@@ -110,13 +108,13 @@ public class RemoteRaceWinnerService implements RaceWinnerService {
       if (total == Integer.MAX_VALUE) {
         try {
           total = Math.min(Integer.parseInt(result.getMrData().getTotal()), MAX_TOTAL);
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
           log.error("Could not parse total value: {}", result.getMrData().getTotal());
           break;
         }
       }
 
-      List<RaceWinner> winners = result.getMrData()
+      final List<RaceWinner> winners = result.getMrData()
         .getRaceTable()
         .getRaces()
         .stream()
@@ -125,7 +123,6 @@ public class RemoteRaceWinnerService implements RaceWinnerService {
         .toList();
 
       allWinners.addAll(winners);
-
       offset += limit;
       pageCount++;
     }
@@ -133,20 +130,20 @@ public class RemoteRaceWinnerService implements RaceWinnerService {
     return allWinners;
   }
 
-  private RaceWinner mapToRaceWinner(Race race) {
-    var results = race.getResults();
+  private RaceWinner mapToRaceWinner(final Race race) {
+    final var results = race.getResults();
     if (results == null || results.isEmpty()) {
       log.warn("No results found for race {}", race.getRound());
       return null;
     }
 
-    var winnerResult = results.get(0); // Assuming first result is the winner
-    RaceWinner raceWinner = new RaceWinner();
+    final var winnerResult = results.get(0); // Assuming first result is the winner
+    final RaceWinner raceWinner = new RaceWinner();
     raceWinner.setRound(race.getRound());
     raceWinner.setSeason(race.getSeason());
     raceWinner.setTime(race.getTime());
 
-    var constructor = winnerResult.getConstructor();
+    final var constructor = winnerResult.getConstructor();
     if (constructor != null) {
       raceWinner.setConstructor(new Constructor(
         constructor.getConstructorId(),
@@ -155,7 +152,7 @@ public class RemoteRaceWinnerService implements RaceWinnerService {
       ));
     }
 
-    var driver = winnerResult.getDriver();
+    final var driver = winnerResult.getDriver();
     if (driver != null) {
       raceWinner.setDriver(new Driver(
         driver.getDriverId(),
