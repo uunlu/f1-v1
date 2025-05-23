@@ -3,10 +3,10 @@ package com.f1.seasonchampions.service;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.repository.SeasonChampionRepository;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,28 +14,29 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class LocalSeasonChampionService implements SeasonChampionService {
-    private final SeasonChampionRepository seasonChampionRepository;
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<SeasonChampion> getSeasonChampions(SeasonRangeRequest request) {
-        log.info("Fetching season champions from local database: {} to {}",
-                request.getStartYear(), request.getEndYear());
+  private final SeasonChampionRepository seasonChampionRepository;
 
-        return seasonChampionRepository.findBySeasonBetweenOrderBySeason(
-                String.valueOf(request.getStartYear()),
-                String.valueOf(request.getEndYear()));
-    }
+  @Override
+  @Transactional(readOnly = true)
+  public List<SeasonChampion> getSeasonChampions(final SeasonRangeRequest request) {
+    log.info("Fetching season champions from local database: {} to {}",
+      request.getStartYear(), request.getEndYear());
 
-    @Override
-    @Transactional
-    public SeasonChampion saveChampion(SeasonChampion champion) {
-        log.debug("Saving champion to database: {}", champion);
-        return seasonChampionRepository.save(champion);
-    }
+    return this.seasonChampionRepository.findBySeasonBetweenOrderBySeason(
+      String.valueOf(request.getStartYear()),
+      String.valueOf(request.getEndYear()));
+  }
 
-    public boolean hasCompleteDataForRange(SeasonRangeRequest request) {
-        List<SeasonChampion> existingChampions = getSeasonChampions(request);
-        return existingChampions.size() == (request.getEndYear() - request.getStartYear() + 1);
-    }
+  @Override
+  @Transactional
+  public SeasonChampion saveChampion(final SeasonChampion champion) {
+    log.debug("Saving champion to database: {}", champion);
+    return this.seasonChampionRepository.save(champion);
+  }
+
+  public boolean hasCompleteDataForRange(final SeasonRangeRequest request) {
+    final List<SeasonChampion> existingChampions = this.getSeasonChampions(request);
+    return existingChampions.size() == (request.getEndYear() - request.getStartYear() + 1);
+  }
 }

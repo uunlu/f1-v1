@@ -12,28 +12,34 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@EnableRetry // This enables Spring Retry functionality
+@EnableRetry
 public class RetryConfig {
 
-    @Bean
-    public RetryTemplate retryTemplate() {
-        RetryTemplate retryTemplate = new RetryTemplate();
+  private static final long INITIAL_INTERVAL = 1000L;       // 1 second initial delay
+  private static final double MULTIPLIER = 2.0;             // Double the wait time for each retry
+  private static final long MAX_INTERVAL = 10000L;          // Maximum 10 seconds delay
+  private static final int MAX_ATTEMPTS = 3;                 // Number of retry attempts
 
-        // Configure the backoff policy - determines how long to wait between retries
-        ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
-        backOffPolicy.setInitialInterval(1000); // 1 second initial delay
-        backOffPolicy.setMultiplier(2.0);       // Double the wait time for each retry
-        backOffPolicy.setMaxInterval(10000);    // Maximum 10 seconds delay
-        retryTemplate.setBackOffPolicy(backOffPolicy);
+  @Bean
+  public RetryTemplate retryTemplate() {
+    final RetryTemplate retryTemplate = new RetryTemplate();
 
-        // Configure which exceptions should trigger a retry
-        Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<>();
-        retryableExceptions.put(RestClientException.class, true);
+    // Configure the backoff policy - determines how long to wait between retries
+    final ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+    backOffPolicy.setInitialInterval(INITIAL_INTERVAL);
+    backOffPolicy.setMultiplier(MULTIPLIER);
+    backOffPolicy.setMaxInterval(MAX_INTERVAL);
+    retryTemplate.setBackOffPolicy(backOffPolicy);
 
-        // Configure retry policy - how many times to retry and on which exceptions
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(3, retryableExceptions, true);
-        retryTemplate.setRetryPolicy(retryPolicy);
+    // Configure which exceptions should trigger a retry
+    final Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<>();
+    retryableExceptions.put(RestClientException.class, true);
 
-        return retryTemplate;
-    }
+    // Configure retry policy - how many times to retry and on which exceptions
+    final SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(MAX_ATTEMPTS, retryableExceptions, true);
+    retryTemplate.setRetryPolicy(retryPolicy);
+
+    return retryTemplate;
+  }
 }
+

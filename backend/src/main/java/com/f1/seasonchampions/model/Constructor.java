@@ -1,7 +1,6 @@
 package com.f1.seasonchampions.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,22 +9,23 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class Constructor {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(name = "constructor_id", nullable = false)
-    private String constructorId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+  @Column(name = "constructor_id", nullable = false)
+  private String constructorId;
 
-    @Column(name = "nationality")
-    private String nationality;
+  @Column(name = "name", nullable = false)
+  private String name;
 
-    public Constructor(String constructorId, String name, String nationality) {
-        this.constructorId = constructorId;
-        this.name = name;
-        this.nationality = nationality;
-    }
+  @Column(name = "nationality")
+  private String nationality;
+
+  public Constructor(final String constructorId, final String name, final String nationality) {
+    this.constructorId = constructorId;
+    this.name = name;
+    this.nationality = nationality;
+  }
 }
