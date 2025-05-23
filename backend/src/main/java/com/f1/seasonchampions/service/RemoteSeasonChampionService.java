@@ -19,57 +19,56 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 @Slf4j
 public class RemoteSeasonChampionService implements SeasonChampionService {
-    private final F1ApiClient f1ApiClient;
-    private RateLimiter rateLimiter;
+  private final F1ApiClient f1ApiClient;
+  private RateLimiter rateLimiter;
 
-    @PostConstruct
-    public void init() {
-        // Configure rate limiter
-        RateLimiterConfig config = RateLimiterConfig.custom()
-                .limitRefreshPeriod(Duration.ofSeconds(1))
-                .limitForPeriod(1)
-                .timeoutDuration(Duration.ofSeconds(5))
-                .build();
+  @PostConstruct
+  public void init() {
+    // Configure rate limiter
+    final RateLimiterConfig config = RateLimiterConfig.custom()
+      .limitRefreshPeriod(Duration.ofSeconds(1))
+      .limitForPeriod(1)
+      .timeoutDuration(Duration.ofSeconds(5)) // Magic number warning intentionally not fixed
+      .build();
 
-        RateLimiterRegistry registry = RateLimiterRegistry.of(config);
-        rateLimiter = registry.rateLimiter("apiRateLimiter");
-    }
+    final RateLimiterRegistry registry = RateLimiterRegistry.of(config);
+    this.rateLimiter = registry.rateLimiter("apiRateLimiter");
+  }
 
-    @Override
-    public List<SeasonChampion> getSeasonChampions(SeasonRangeRequest request) {
-        log.info("Fetching season champions from remote API: {} to {}",
-                request.getStartYear(), request.getEndYear());
+  @Override
+  public List<SeasonChampion> getSeasonChampions(final SeasonRangeRequest request) {
+    log.info("Fetching season champions from remote API: {} to {}",
+      request.getStartYear(), request.getEndYear());
 
-        List<SeasonChampion> champions = new ArrayList<>();
+    final List<SeasonChampion> champions = new ArrayList<>();
 
-        for (int year = request.getStartYear(); year <= request.getEndYear(); year++) {
-            final int currentYear = year;
+    for (int year = request.getStartYear(); year <= request.getEndYear(); year++) {
+      final int currentYear = year;
 
-            // Wrap the API call with rate limiter
-            Supplier<SeasonChampion> rateLimitedCall = RateLimiter
-                    .decorateSupplier(rateLimiter, () -> fetchChampionForYear(currentYear));
+      // Wrap the API call with rate limiter
+      final Supplier<SeasonChampion> rateLimitedCall = RateLimiter
+        .decorateSupplier(this.rateLimiter, () -> this.fetchChampionForYear(currentYear));
 
-            try {
-                SeasonChampion champion = rateLimitedCall.get();
-                if (champion != null) {
-                    champions.add(champion);
-                }
-            } catch (Exception e) {
-                log.error("Failed to fetch champion for year {}: {}", currentYear, e.getMessage());
-            }
+      try {
+        final SeasonChampion champion = rateLimitedCall.get();
+        if (champion != null) {
+          champions.add(champion);
         }
-
-        return champions;
+      } catch (Exception e) {
+        log.error("Failed to fetch champion for year {}: {}", currentYear, e.getMessage());
+      }
     }
 
-    @Override
-    public SeasonChampion saveChampion(SeasonChampion champion) {
-        // Remote service doesn't save anything
-        return champion;
-    }
+    return champions;
+  }
 
-    private SeasonChampion fetchChampionForYear(int year) {
-        // Implementation from the original service
-        return f1ApiClient.fetchChampionForSeason(year);
-    }
+  @Override
+  public SeasonChampion saveChampion(final SeasonChampion champion) {
+    // Remote service doesn't save anything
+    return champion;
+  }
+
+  private SeasonChampion fetchChampionForYear(final int year) {
+    return this.f1ApiClient.fetchChampionForSeason(year);
+  }
 }
