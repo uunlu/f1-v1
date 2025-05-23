@@ -1,14 +1,12 @@
 package com.f1.seasonchampions.service;
 
 import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
-import com.f1.seasonchampions.dto.ResultsByYearResponse;
 import com.f1.seasonchampions.dto.Driver;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.SeasonChampion;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,24 +20,17 @@ public class F1ApiClient {
   @Value("https://api.jolpi.ca/ergast/")
   private String baseUrl;
 
-  /**
-   * Fetches the Formula 1 champion for a specific season
-   *
-   * @param year The year/season to fetch the champion for
-   * @return SeasonChampion object with the champion's details
-   */
-  public SeasonChampion fetchChampionForSeason(int year) {
+  public SeasonChampion fetchChampionForSeason(final int year) {
     log.info("Fetching F1 champion data for year: {}", year);
 
     try {
-      String url = String.format("%s/f1/%d/driverstandings/", baseUrl, year);
+      final String url = String.format("%s/f1/%d/driverstandings/", this.baseUrl, year);
 
-      // This assumes the API returns a response that can be directly mapped to SeasonChampion
-      // In practice, you might need to map from a different DTO structure
-      DriverStandingsByYearResponse response = restTemplate.getForObject(url, DriverStandingsByYearResponse.class);
+      final DriverStandingsByYearResponse response =
+        this.restTemplate.getForObject(url, DriverStandingsByYearResponse.class);
 
       if (response != null && response.getMrData() != null) {
-        return mapToSeasonChampion(response, String.valueOf(year));
+        return this.mapToSeasonChampion(response, String.valueOf(year));
       } else {
         log.warn("No champion data found for year: {}", year);
         return null;
@@ -50,8 +41,8 @@ public class F1ApiClient {
     }
   }
 
-  private SeasonChampion mapToSeasonChampion(DriverStandingsByYearResponse response, String year) {
-    Driver driverDto = response.getMrData()
+  private SeasonChampion mapToSeasonChampion(final DriverStandingsByYearResponse response, final String year) {
+    final Driver driverDto = response.getMrData()
       .getStandingsTable()
       .getStandingsLists()
       .getFirst()
@@ -59,17 +50,16 @@ public class F1ApiClient {
       .getFirst()
       .getDriver();
 
-    var constructorDto = response.getMrData()
+    final var constructorDto = response.getMrData()
       .getStandingsTable()
       .getStandingsLists()
       .getFirst()
       .getDriverStandings()
       .getFirst()
       .getConstructors()
-      .getFirst(); // TODO: can there be multiple constructors? Need to update DB schema accordingly.
-    // Check: https://api.jolpi.ca/ergast//f1/2020/driverstandings/
+      .getFirst();
 
-    com.f1.seasonchampions.model.Driver driver = new com.f1.seasonchampions.model.Driver();
+    final com.f1.seasonchampions.model.Driver driver = new com.f1.seasonchampions.model.Driver();
     driver.setDriverId(driverDto.getDriverId());
     driver.setCode(driverDto.getCode());
     driver.setNationality(driverDto.getNationality());
@@ -78,7 +68,7 @@ public class F1ApiClient {
     driver.setFamilyName(driverDto.getFamilyName());
     driver.setGivenName(driverDto.getGivenName());
 
-    var constructor = new Constructor();
+    final var constructor = new Constructor();
     constructor.setConstructorId(constructorDto.getConstructorId());
     constructor.setNationality(constructorDto.getNationality());
     constructor.setConstructorId(constructor.getConstructorId());
@@ -93,7 +83,7 @@ public class F1ApiClient {
 
   // Inner classes for API response structure
   @lombok.Data
-  private static class F1ApiResponse {
+  private static final class F1ApiResponse {
     private DriverData driver;
     private TeamData team;
     private int points;
@@ -101,7 +91,7 @@ public class F1ApiClient {
   }
 
   @lombok.Data
-  private static class DriverData {
+  private static final class DriverData {
     private String driverId;
     private String firstName;
     private String lastName;
@@ -110,14 +100,14 @@ public class F1ApiClient {
   }
 
   @lombok.Data
-  private static class TeamData {
+  private static final class TeamData {
     private String teamId;
     private String name;
   }
 
   // Custom exception class for API errors
   public static class F1ApiException extends RuntimeException {
-    public F1ApiException(String message, Throwable cause) {
+    public F1ApiException(final String message, final Throwable cause) {
       super(message, cause);
     }
   }
