@@ -10,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class SeasonChampionServiceIntegrationTest {
+public class SeasonSeasonChampionServiceIntegrationTest {
 
     @Autowired
     private SeasonChampionService seasonChampionService;
@@ -33,4 +33,4 @@ public class SeasonChampionServiceIntegrationTest {
         // Simulate API error and validate proper handling
         // This can be implemented with MockRestServiceServer or similar in a more advanced test
     }
-} 
+}

@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RemoteChampionService implements ChampionService {
+public class RemoteSeasonChampionService implements SeasonChampionService {
     private final F1ApiClient f1ApiClient;
     private RateLimiter rateLimiter;
 

@@ -3,7 +3,7 @@ package com.f1.seasonchampions.controller;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import com.f1.seasonchampions.service.ChampionService;
+import com.f1.seasonchampions.service.SeasonChampionService;
 import com.f1.seasonchampions.service.RaceWinnerService;
 import com.f1.seasonchampions.validation.CurrentYearConstraint;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +28,7 @@ import java.util.List;
 @Tag(name = "F1 Season Champions", description = "APIs for retrieving F1 season champions and race winners")
 @RequiredArgsConstructor
 public class SeasonChampionController {
-    private final ChampionService championService;
+    private final SeasonChampionService seasonChampionService;
     private final RaceWinnerService raceWinnerService;
 
     @GetMapping("/season-champions")
@@ -49,7 +49,7 @@ public class SeasonChampionController {
 
         log.info("Received request for season champions from {} to {}", startYear, endYear);
         var request = new SeasonRangeRequest(startYear, endYear);
-        var champions = championService.getSeasonChampions(request);
+        var champions = seasonChampionService.getSeasonChampions(request);
         log.info("Returning {} season champions", champions.size());
         return ResponseEntity.ok(champions);
     }
@@ -70,4 +70,4 @@ public class SeasonChampionController {
         log.info("Returning {} race winners", winners.size());
         return ResponseEntity.ok(winners);
     }
-} 
+}

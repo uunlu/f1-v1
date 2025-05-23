@@ -3,31 +3,25 @@ package com.f1.seasonchampions.service;
 import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import io.github.resilience4j.ratelimiter.RateLimiter;
-import io.github.resilience4j.ratelimiter.RateLimiterConfig;
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Primary
 @Slf4j
-public class LocalWithRemoteFallbackChampionService implements ChampionService {
-    private final LocalChampionService localService;
-    private final RemoteChampionService remoteService;
+public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChampionService {
+    private final LocalSeasonChampionService localService;
+    private final RemoteSeasonChampionService remoteService;
 
     @Override
     @Transactional

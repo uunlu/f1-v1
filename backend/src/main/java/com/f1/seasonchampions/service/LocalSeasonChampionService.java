@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LocalChampionService implements ChampionService {
+public class LocalSeasonChampionService implements SeasonChampionService {
     private final SeasonChampionRepository seasonChampionRepository;
 
     @Override
