@@ -6,14 +6,13 @@ import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -27,11 +26,14 @@ public class RemoteSeasonChampionService implements SeasonChampionService {
   @PostConstruct
   public void init() {
     // Configure rate limiter
-    final RateLimiterConfig config = RateLimiterConfig.custom()
-      .limitRefreshPeriod(Duration.ofSeconds(1))
-      .limitForPeriod(1)
-      .timeoutDuration(Duration.ofSeconds(TIMEOUT_IN_SECOND)) // Magic number warning intentionally not fixed
-      .build();
+    final RateLimiterConfig config =
+        RateLimiterConfig.custom()
+            .limitRefreshPeriod(Duration.ofSeconds(1))
+            .limitForPeriod(1)
+            .timeoutDuration(
+                Duration.ofSeconds(
+                    TIMEOUT_IN_SECOND)) // Magic number warning intentionally not fixed
+            .build();
 
     final RateLimiterRegistry registry = RateLimiterRegistry.of(config);
     this.rateLimiter = registry.rateLimiter("apiRateLimiter");
@@ -39,8 +41,10 @@ public class RemoteSeasonChampionService implements SeasonChampionService {
 
   @Override
   public List<SeasonChampion> getSeasonChampions(final SeasonRangeRequest request) {
-    log.info("Fetching season champions from remote API: {} to {}",
-      request.getStartYear(), request.getEndYear());
+    log.info(
+        "Fetching season champions from remote API: {} to {}",
+        request.getStartYear(),
+        request.getEndYear());
 
     final List<SeasonChampion> champions = new ArrayList<>();
 
@@ -48,8 +52,9 @@ public class RemoteSeasonChampionService implements SeasonChampionService {
       final int currentYear = year;
 
       // Wrap the API call with rate limiter
-      final Supplier<SeasonChampion> rateLimitedCall = RateLimiter
-        .decorateSupplier(this.rateLimiter, () -> this.fetchChampionForYear(currentYear));
+      final Supplier<SeasonChampion> rateLimitedCall =
+          RateLimiter.decorateSupplier(
+              this.rateLimiter, () -> this.fetchChampionForYear(currentYear));
 
       try {
         final SeasonChampion champion = rateLimitedCall.get();

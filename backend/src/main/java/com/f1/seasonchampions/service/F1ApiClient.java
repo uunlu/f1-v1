@@ -1,7 +1,7 @@
 package com.f1.seasonchampions.service;
 
-import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
 import com.f1.seasonchampions.dto.Driver;
+import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.SeasonChampion;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class F1ApiClient {
       final String url = String.format("%s/f1/%d/driverstandings/", this.baseUrl, year);
 
       final DriverStandingsByYearResponse response =
-        this.restTemplate.getForObject(url, DriverStandingsByYearResponse.class);
+          this.restTemplate.getForObject(url, DriverStandingsByYearResponse.class);
 
       if (response != null && response.getMrData() != null) {
         return this.mapToSeasonChampion(response, String.valueOf(year));
@@ -41,23 +41,28 @@ public class F1ApiClient {
     }
   }
 
-  private SeasonChampion mapToSeasonChampion(final DriverStandingsByYearResponse response, final String year) {
-    final Driver driverDto = response.getMrData()
-      .getStandingsTable()
-      .getStandingsLists()
-      .getFirst()
-      .getDriverStandings()
-      .getFirst()
-      .getDriver();
+  private SeasonChampion mapToSeasonChampion(
+      final DriverStandingsByYearResponse response, final String year) {
+    final Driver driverDto =
+        response
+            .getMrData()
+            .getStandingsTable()
+            .getStandingsLists()
+            .getFirst()
+            .getDriverStandings()
+            .getFirst()
+            .getDriver();
 
-    final var constructorDto = response.getMrData()
-      .getStandingsTable()
-      .getStandingsLists()
-      .getFirst()
-      .getDriverStandings()
-      .getFirst()
-      .getConstructors()
-      .getFirst();
+    final var constructorDto =
+        response
+            .getMrData()
+            .getStandingsTable()
+            .getStandingsLists()
+            .getFirst()
+            .getDriverStandings()
+            .getFirst()
+            .getConstructors()
+            .getFirst();
 
     final com.f1.seasonchampions.model.Driver driver = new com.f1.seasonchampions.model.Driver();
     driver.setDriverId(driverDto.getDriverId());
@@ -75,10 +80,10 @@ public class F1ApiClient {
     constructor.setName(constructorDto.getName());
 
     return SeasonChampion.builder()
-      .season(String.valueOf(year))
-      .driver(driver)
-      .constructor(constructor)
-      .build();
+        .season(String.valueOf(year))
+        .driver(driver)
+        .constructor(constructor)
+        .build();
   }
 
   // Inner classes for API response structure

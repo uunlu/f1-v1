@@ -3,17 +3,16 @@ package com.f1.seasonchampions.service;
 import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +36,8 @@ public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChamp
     }
 
     final List<SeasonChampion> localChampions = this.localService.getSeasonChampions(request);
-    final Set<String> existingSeasons = localChampions.stream()
-      .map(SeasonChampion::getSeason)
-      .collect(Collectors.toSet());
+    final Set<String> existingSeasons =
+        localChampions.stream().map(SeasonChampion::getSeason).collect(Collectors.toSet());
 
     final List<SeasonChampion> result = new ArrayList<>(localChampions);
 
@@ -50,7 +48,8 @@ public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChamp
       }
 
       final SeasonRangeRequest singleYearRequest = new SeasonRangeRequest(year, year);
-      final List<SeasonChampion> remoteChampions = this.remoteService.getSeasonChampions(singleYearRequest);
+      final List<SeasonChampion> remoteChampions =
+          this.remoteService.getSeasonChampions(singleYearRequest);
 
       for (final SeasonChampion champion : remoteChampions) {
         final SeasonChampion savedChampion = this.localService.saveChampion(champion);

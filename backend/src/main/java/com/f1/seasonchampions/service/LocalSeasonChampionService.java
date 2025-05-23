@@ -3,12 +3,11 @@ package com.f1.seasonchampions.service;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.repository.SeasonChampionRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,12 +19,13 @@ public class LocalSeasonChampionService implements SeasonChampionService {
   @Override
   @Transactional(readOnly = true)
   public List<SeasonChampion> getSeasonChampions(final SeasonRangeRequest request) {
-    log.info("Fetching season champions from local database: {} to {}",
-      request.getStartYear(), request.getEndYear());
+    log.info(
+        "Fetching season champions from local database: {} to {}",
+        request.getStartYear(),
+        request.getEndYear());
 
     return this.seasonChampionRepository.findBySeasonBetweenOrderBySeason(
-      String.valueOf(request.getStartYear()),
-      String.valueOf(request.getEndYear()));
+        String.valueOf(request.getStartYear()), String.valueOf(request.getEndYear()));
   }
 
   @Override

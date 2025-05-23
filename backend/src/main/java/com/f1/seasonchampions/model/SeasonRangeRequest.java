@@ -10,9 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SeasonRangeRequest {
-    @Min(value = 1950, message = "Start year must be 1950 or later")
-    private int startYear;
+  @Min(value = 1950, message = "Start year must be 1950 or later")
+  private int startYear;
 
-    @CurrentYearConstraint
-    private int endYear;
+  @CurrentYearConstraint private int endYear;
 }

@@ -13,12 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Driver {
-    @Id
-    private String driverId;
-    private String permanentNumber;
-    private String code;
-    private String givenName;
-    private String familyName;
-    private String dateOfBirth;
-    private String nationality;
+  @Id private String driverId;
+  private String permanentNumber;
+  private String code;
+  private String givenName;
+  private String familyName;
+  private String dateOfBirth;
+  private String nationality;
 }

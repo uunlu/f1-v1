@@ -3,10 +3,9 @@ package com.f1.seasonchampions.config;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.time.Duration;
 
 @Configuration
 public class SeasonChampionServiceConfig {
@@ -17,11 +16,12 @@ public class SeasonChampionServiceConfig {
 
   @Bean
   public RateLimiter apiRateLimiter() {
-    final RateLimiterConfig config = RateLimiterConfig.custom()
-      .limitRefreshPeriod(Duration.ofSeconds(LIMIT_REFRESH_PERIOD_SECONDS))
-      .limitForPeriod(LIMIT_FOR_PERIOD)
-      .timeoutDuration(Duration.ofSeconds(TIMEOUT_DURATION_SECONDS))
-      .build();
+    final RateLimiterConfig config =
+        RateLimiterConfig.custom()
+            .limitRefreshPeriod(Duration.ofSeconds(LIMIT_REFRESH_PERIOD_SECONDS))
+            .limitForPeriod(LIMIT_FOR_PERIOD)
+            .timeoutDuration(Duration.ofSeconds(TIMEOUT_DURATION_SECONDS))
+            .build();
 
     final RateLimiterRegistry registry = RateLimiterRegistry.of(config);
     return registry.rateLimiter("apiRateLimiter");
