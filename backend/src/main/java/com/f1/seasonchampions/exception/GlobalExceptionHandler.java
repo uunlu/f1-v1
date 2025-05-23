@@ -12,101 +12,100 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Create a standard error response structure
-    @Getter
-    private static class ApiError {
-        private final Instant timestamp;
-        private final int status;
-        private final String error;
-        private final String message;
-        private final Map<String, String> details;
+  // Create a standard error response structure
+  @Getter
+  private static class ApiError {
+    private final Instant timestamp;
+    private final int status;
+    private final String error;
+    private final String message;
+    private final Map<String, String> details;
 
-        public ApiError(HttpStatus status, String message) {
-            this.timestamp = Instant.now();
-            this.status = status.value();
-            this.error = status.getReasonPhrase();
-            this.message = message;
-            this.details = new HashMap<>();
-        }
-
-        // Add a validation error detail
-        public void addValidationError(String field, String message) {
-            details.put(field, message);
-        }
+    ApiError(final HttpStatus status, final String message) {
+      this.timestamp = Instant.now();
+      this.status = status.value();
+      this.error = status.getReasonPhrase();
+      this.message = message;
+      this.details = new HashMap<>();
     }
 
-    // For @Valid annotation validation failures
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Validation error");
-
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            apiError.addValidationError(fieldName, errorMessage);
-        });
-
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    // Add a validation error detail
+    void addValidationError(final String field, final String detailMessage) {
+      this.details.put(field, detailMessage);
     }
+  }
 
-    // For @Validated validation failures
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Validation error");
+  // For @Valid annotation validation failures
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ApiError> handleValidationExceptions(final MethodArgumentNotValidException ex) {
+    final ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Validation error");
 
-        ex.getConstraintViolations().forEach(violation -> {
-            String propertyPath = violation.getPropertyPath().toString();
-            String field = propertyPath.contains(".") ?
-                    propertyPath.substring(propertyPath.lastIndexOf('.') + 1) : propertyPath;
-            String message = violation.getMessage();
-            apiError.addValidationError(field, message);
-        });
+    ex.getBindingResult().getAllErrors().forEach(error -> {
+      final String fieldName = ((FieldError) error).getField();
+      final String errorMessage = error.getDefaultMessage();
+      apiError.addValidationError(fieldName, errorMessage);
+    });
 
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
-    }
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
 
-    // For logical validation errors
-    @ExceptionHandler(InvalidInputException.class)
-    public ResponseEntity<ApiError> handleIllegalArgument(InvalidInputException ex) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Invalid argument");
-        apiError.addValidationError("error", ex.getMessage());
+  // For @Validated validation failures
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ApiError> handleConstraintViolation(final ConstraintViolationException ex) {
+    final ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Validation error");
 
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
-    }
+    ex.getConstraintViolations().forEach(violation -> {
+      final String propertyPath = violation.getPropertyPath().toString();
+      final String field = propertyPath.contains(".") ?
+        propertyPath.substring(propertyPath.lastIndexOf('.') + 1) : propertyPath;
+      final String detailMessage = violation.getMessage();
+      apiError.addValidationError(field, detailMessage);
+    });
 
-    // For missing required parameters
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ApiError> handleMissingParams(MissingServletRequestParameterException ex) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Missing parameter");
-        apiError.addValidationError(ex.getParameterName(), "Parameter is required");
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
 
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
-    }
+  // For logical validation errors
+  @ExceptionHandler(InvalidInputException.class)
+  public ResponseEntity<ApiError> handleIllegalArgument(final InvalidInputException ex) {
+    final ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Invalid argument");
+    apiError.addValidationError("error", ex.getMessage());
 
-    // For type conversion errors
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Type conversion error");
-        apiError.addValidationError(ex.getName(), "Should be of type " +
-                ex.getRequiredType().getSimpleName());
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
 
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
-    }
+  // For missing required parameters
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ApiError> handleMissingParams(final MissingServletRequestParameterException ex) {
+    final ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Missing parameter");
+    apiError.addValidationError(ex.getParameterName(), "Parameter is required");
 
-    // Fallback for any other exceptions
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleAllUncaughtException(Exception ex) {
-        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred");
-        apiError.addValidationError("error", ex.getMessage());
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
 
-        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  // For type conversion errors
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ApiError> handleTypeMismatch(final MethodArgumentTypeMismatchException ex) {
+    final ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, "Type conversion error");
+    apiError.addValidationError(ex.getName(), "Should be of type " +
+      ex.getRequiredType().getSimpleName());
+
+    return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+  }
+
+  // Fallback for any other exceptions
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ApiError> handleAllUncaughtException(final Exception ex) {
+    final ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR,
+      "An unexpected error occurred");
+    apiError.addValidationError("error", ex.getMessage());
+
+    return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
 }
