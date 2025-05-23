@@ -15,6 +15,11 @@
 
   <module name="SuppressWarningsFilter"/>
 
+  <!-- Add SuppressionFilter to exclude target directory -->
+  <module name="SuppressionFilter">
+    <property name="file" value="${basedir}/config/checkstyle-suppressions.xml"/>
+  </module>
+
   <module name="TreeWalker">
     <module name="Regexp">
       <property name="format" value="[ \t]+$"/>
