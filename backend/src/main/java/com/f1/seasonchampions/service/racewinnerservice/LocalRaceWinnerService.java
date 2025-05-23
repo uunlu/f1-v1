@@ -22,7 +22,7 @@ public class LocalRaceWinnerService implements RaceWinnerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RaceWinner> getRaceWinners(int year) {
+    public List<RaceWinner> getRaceWinners(final int year) {
         log.info("Fetching race winners from local database for year: {}", year);
         return raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
     }

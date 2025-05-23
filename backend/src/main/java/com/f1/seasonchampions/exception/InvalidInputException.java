@@ -1,7 +1,7 @@
 package com.f1.seasonchampions.exception;
 
 public class InvalidInputException extends  RuntimeException {
-    public InvalidInputException(String message) {
+    public InvalidInputException(final String message) {
         super(message);
     }
 }
