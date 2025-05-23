@@ -3,9 +3,8 @@ package com.f1.seasonchampions.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.f1.seasonchampions.model.SeasonChampion;
-import java.util.List;
-
 import com.f1.seasonchampions.model.SeasonRangeRequest;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +16,8 @@ public class SeasonSeasonChampionServiceIntegrationTest {
 
   @Test
   public void testGetSeasonChampions() {
-    List<SeasonChampion> champions = seasonChampionService.getSeasonChampions(new SeasonRangeRequest(2005, 2024));
+    List<SeasonChampion> champions =
+        seasonChampionService.getSeasonChampions(new SeasonRangeRequest(2005, 2024));
 
     assertNotNull(champions);
     assertEquals(20, champions.size());
