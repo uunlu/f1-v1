@@ -4,7 +4,7 @@ import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.service.SeasonChampionService;
-import com.f1.seasonchampions.service.RaceWinnerService;
+import com.f1.seasonchampions.service.racewinnerservice.RaceWinnerService;
 import com.f1.seasonchampions.validation.CurrentYearConstraint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

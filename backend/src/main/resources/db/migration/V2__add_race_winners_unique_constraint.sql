@@ -1,0 +1,1 @@
+ALTER TABLE race_winners ADD CONSTRAINT uk_race_winners_season_round UNIQUE (season, round); 

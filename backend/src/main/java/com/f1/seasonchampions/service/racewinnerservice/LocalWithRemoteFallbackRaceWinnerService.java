@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service;
+package com.f1.seasonchampions.service.racewinnerservice;
 
 import com.f1.seasonchampions.model.RaceWinner;
 import lombok.RequiredArgsConstructor;
@@ -46,4 +46,4 @@ public class LocalWithRemoteFallbackRaceWinnerService implements RaceWinnerServi
     public boolean hasCompleteDataForYear(int year) {
         return localService.hasCompleteDataForYear(year);
     }
-} 
+}

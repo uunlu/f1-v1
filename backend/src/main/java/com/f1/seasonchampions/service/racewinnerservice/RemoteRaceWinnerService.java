@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service;
+package com.f1.seasonchampions.service.racewinnerservice;
 
 import com.f1.seasonchampions.dto.Race;
 import com.f1.seasonchampions.dto.ResultsByYearResponse;

@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service;
+package com.f1.seasonchampions.service.racewinnerservice;
 
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
@@ -24,19 +24,29 @@ public class LocalRaceWinnerService implements RaceWinnerService {
     @Transactional(readOnly = true)
     public List<RaceWinner> getRaceWinners(int year) {
         log.info("Fetching race winners from local database for year: {}", year);
-        return raceWinnerRepository.findBySeasonOrderByRound(String.valueOf(year));
+        return raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
     }
 
     @Override
     @Transactional
     public RaceWinner saveRaceWinner(RaceWinner winner) {
         log.debug("Saving race winner to database: {}", winner);
-        
+
+        // Check if race winner already exists
+        List<RaceWinner> existingWinners = raceWinnerRepository.findBySeasonAndOptionalRound(
+            winner.getSeason(), winner.getRound());
+
+        if (!existingWinners.isEmpty()) {
+            log.debug("Race winner already exists for season {} round {}",
+                winner.getSeason(), winner.getRound());
+            return existingWinners.get(0);
+        }
+
         // Handle Driver entity
         if (winner.getDriver() != null) {
-            Optional<com.f1.seasonchampions.model.Driver> existingDriver = 
+            Optional<com.f1.seasonchampions.model.Driver> existingDriver =
                 driverRepository.findById(winner.getDriver().getDriverId());
-            
+
             if (existingDriver.isPresent()) {
                 winner.setDriver(existingDriver.get());
             } else {
@@ -47,9 +57,9 @@ public class LocalRaceWinnerService implements RaceWinnerService {
         // Handle Constructor entity
         if (winner.getConstructor() != null) {
             String constructorId = winner.getConstructor().getConstructorId();
-            Optional<com.f1.seasonchampions.model.Constructor> existingConstructor = 
+            Optional<com.f1.seasonchampions.model.Constructor> existingConstructor =
                 constructorRepository.findByConstructorId(constructorId);
-            
+
             if (existingConstructor.isPresent()) {
                 winner.setConstructor(existingConstructor.get());
             } else {
@@ -64,7 +74,6 @@ public class LocalRaceWinnerService implements RaceWinnerService {
     public boolean hasCompleteDataForYear(int year) {
         List<RaceWinner> existingWinners = getRaceWinners(year);
         // TODO: Implement proper validation based on expected number of races per season
-        // For now, assume if we have any data, it's complete
         return !existingWinners.isEmpty();
     }
-} 
+}
