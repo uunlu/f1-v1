@@ -14,36 +14,36 @@ import java.util.List;
 @Primary
 @Slf4j
 public class LocalWithRemoteFallbackRaceWinnerService implements RaceWinnerService {
-    private final LocalRaceWinnerService localService;
-    private final RemoteRaceWinnerService remoteService;
+  private final LocalRaceWinnerService localService;
+  private final RemoteRaceWinnerService remoteService;
 
-    @Override
-    @Transactional
-    public List<RaceWinner> getRaceWinners(int year) {
-        if (localService.hasCompleteDataForYear(year)) {
-            log.info("Returning race winners from local database for year: {}", year);
-            return localService.getRaceWinners(year);
-        }
-
-        log.info("Fetching race winners from remote API for year: {}", year);
-        List<RaceWinner> remoteWinners = remoteService.getRaceWinners(year);
-
-        for (RaceWinner winner : remoteWinners) {
-            log.info("Saving race winners from remote API for year: {}", year);
-            localService.saveRaceWinner(winner);
-        }
-
-        return remoteWinners;
+  @Override
+  @Transactional
+  public List<RaceWinner> getRaceWinners(final int year) {
+    if (this.localService.hasCompleteDataForYear(year)) {
+      log.info("Returning race winners from local database for year: {}", year);
+      return this.localService.getRaceWinners(year);
     }
 
-    @Override
-    @Transactional
-    public RaceWinner saveRaceWinner(RaceWinner winner) {
-        return localService.saveRaceWinner(winner);
+    log.info("Fetching race winners from remote API for year: {}", year);
+    final List<RaceWinner> remoteWinners = this.remoteService.getRaceWinners(year);
+
+    for (final RaceWinner winner : remoteWinners) {
+      log.info("Saving race winners from remote API for year: {}", year);
+      this.localService.saveRaceWinner(winner);
     }
 
-    @Override
-    public boolean hasCompleteDataForYear(int year) {
-        return localService.hasCompleteDataForYear(year);
-    }
+    return remoteWinners;
+  }
+
+  @Override
+  @Transactional
+  public RaceWinner saveRaceWinner(final RaceWinner winner) {
+    return this.localService.saveRaceWinner(winner);
+  }
+
+  @Override
+  public boolean hasCompleteDataForYear(final int year) {
+    return this.localService.hasCompleteDataForYear(year);
+  }
 }
