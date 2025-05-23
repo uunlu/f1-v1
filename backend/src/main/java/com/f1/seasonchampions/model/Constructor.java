@@ -1,8 +1,6 @@
 package com.f1.seasonchampions.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,10 +9,23 @@ import lombok.NoArgsConstructor;
 @Table(name = "constructors")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Constructor {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "constructor_id", nullable = false)
     private String constructorId;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "nationality")
     private String nationality;
-} 
+
+    public Constructor(String constructorId, String name, String nationality) {
+        this.constructorId = constructorId;
+        this.name = name;
+        this.nationality = nationality;
+    }
+}

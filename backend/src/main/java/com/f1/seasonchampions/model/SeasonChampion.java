@@ -21,6 +21,6 @@ public class SeasonChampion {
     private Driver driver;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "constructor_id")
+    @JoinColumn(name = "id", referencedColumnName = "id")
     private Constructor constructor;
-} 
+}
