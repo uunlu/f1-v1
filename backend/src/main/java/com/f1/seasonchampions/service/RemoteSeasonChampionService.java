@@ -19,6 +19,8 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 @Slf4j
 public class RemoteSeasonChampionService implements SeasonChampionService {
+  private static final int TIMEOUT_IN_SECOND = 5;
+
   private final F1ApiClient f1ApiClient;
   private RateLimiter rateLimiter;
 
@@ -28,7 +30,7 @@ public class RemoteSeasonChampionService implements SeasonChampionService {
     final RateLimiterConfig config = RateLimiterConfig.custom()
       .limitRefreshPeriod(Duration.ofSeconds(1))
       .limitForPeriod(1)
-      .timeoutDuration(Duration.ofSeconds(5)) // Magic number warning intentionally not fixed
+      .timeoutDuration(Duration.ofSeconds(TIMEOUT_IN_SECOND)) // Magic number warning intentionally not fixed
       .build();
 
     final RateLimiterRegistry registry = RateLimiterRegistry.of(config);

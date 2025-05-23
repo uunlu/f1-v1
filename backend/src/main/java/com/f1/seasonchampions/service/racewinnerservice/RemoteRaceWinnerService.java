@@ -34,6 +34,7 @@ public class RemoteRaceWinnerService implements RaceWinnerService {
   private static final int MAX_TOTAL = 1000;
   private static final int DEFAULT_LIMIT = 100;
   private static final int RETRY_BACKOFF_DELAY_MS = 1000;
+  private static final int TIMEOUT_IN_SECOND = 5;
 
   private final RestTemplate restTemplate;
   private RateLimiter rateLimiter;
@@ -46,7 +47,7 @@ public class RemoteRaceWinnerService implements RaceWinnerService {
     final RateLimiterConfig config = RateLimiterConfig.custom()
       .limitRefreshPeriod(Duration.ofSeconds(1))
       .limitForPeriod(1)
-      .timeoutDuration(Duration.ofSeconds(5))
+      .timeoutDuration(Duration.ofSeconds(TIMEOUT_IN_SECOND))
       .build();
 
     final RateLimiterRegistry registry = RateLimiterRegistry.of(config);

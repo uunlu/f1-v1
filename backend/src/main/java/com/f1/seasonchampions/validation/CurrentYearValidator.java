@@ -7,7 +7,7 @@ import java.time.Year;
 public class CurrentYearValidator implements ConstraintValidator<CurrentYearConstraint, Integer> {
 
     @Override
-    public boolean isValid(Integer value, ConstraintValidatorContext context) {
+    public boolean isValid(final Integer value, final ConstraintValidatorContext context) {
         if (value == null) {
             return true;
         }
