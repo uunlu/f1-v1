@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service.racewinnerservice;
+package com.f1.seasonchampions.service.racewinner;
 
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.repository.ConstructorRepository;
