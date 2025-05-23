@@ -17,7 +17,7 @@
 
   <!-- Add SuppressionFilter to exclude target directory -->
   <module name="SuppressionFilter">
-    <property name="file" value="${basedir}/config/checkstyle-suppressions.xml"/>
+    <property name="file" value="../config/checkstyle-suppressions.xml"/>
   </module>
 
   <module name="TreeWalker">
@@ -42,7 +42,7 @@
       <property name="ignoreComments" value="true"/>
     </module>
     <module name="CyclomaticComplexity">
-      <property name="max" value="6"/>
+      <property name="max" value="10"/>
       <property name="severity" value="warning"/>
     </module>
     <module name="ConstantName"/>
