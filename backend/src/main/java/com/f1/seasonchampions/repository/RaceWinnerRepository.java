@@ -11,7 +11,8 @@ import org.springframework.stereotype.Repository;
 public interface RaceWinnerRepository extends JpaRepository<RaceWinner, Long> {
 
   @Query(
-      "SELECT rw FROM RaceWinner rw WHERE rw.season = :season AND (:round IS NULL OR rw.round = :round) ORDER BY rw.round")
+      "SELECT rw FROM RaceWinner "
+          + "rw WHERE rw.season = :season AND (:round IS NULL OR rw.round = :round) ORDER BY rw.round")
   List<RaceWinner> findBySeasonAndOptionalRound(
       @Param("season") String season, @Param("round") String round);
 }
