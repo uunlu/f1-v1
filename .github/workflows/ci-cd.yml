@@ -84,7 +84,7 @@ jobs:
         with:
           context: backend
           push: true
-          tags: ugurunlu/f1:${{ env.DOCKER_IMAGE_TAG }},ugurunlu/f1:latest
+          tags: uunlu/f1-v1:${{ env.DOCKER_IMAGE_TAG }},uunlu/f1-v1:latest
 
       - name: Run Container Security Scan with Trivy
         uses: aquasecurity/trivy-action@master
