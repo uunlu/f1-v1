@@ -69,7 +69,7 @@ class LocalWithRemoteFallbackRaceWinnerServiceTest {
   @Test
   void whenLocalServiceHasNoData_thenFetchFromRemote() {
     when(localService.hasCompleteDataForYear(2023)).thenReturn(false);
-    //when(localService.getRaceWinners(2023)).thenReturn(Collections.emptyList());
+    // when(localService.getRaceWinners(2023)).thenReturn(Collections.emptyList());
     when(remoteService.getRaceWinners(2023)).thenReturn(Collections.singletonList(raceWinner2023));
     when(localService.saveRaceWinner(raceWinner2023)).thenReturn(raceWinner2023);
 
@@ -93,7 +93,7 @@ class LocalWithRemoteFallbackRaceWinnerServiceTest {
 
     when(localService.hasCompleteDataForYear(2023)).thenReturn(false);
     when(remoteService.getRaceWinners(2023))
-      .thenReturn(Arrays.asList(raceWinner2023, raceWinner2023Round2));
+        .thenReturn(Arrays.asList(raceWinner2023, raceWinner2023Round2));
 
     List<RaceWinner> result = service.getRaceWinners(2023);
 
