@@ -72,13 +72,7 @@ jobs:
         run: mvn -B verify -DskipTests
         working-directory: ./backend
 
-      - name: Run Unit Tests with Coverage
-        run: |
-          mvn test -Djacoco.skip=false
-          mvn jacoco:report
-        working-directory: ./backend
-
-      - name: Run Integration Tests
+      - name: Run Tests with Coverage
         run: mvn verify -Dspring.profiles.active=test
         working-directory: ./backend
 
