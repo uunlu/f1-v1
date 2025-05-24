@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/catthehacker/ubuntu:act-latest
 
     services:
       postgres:
@@ -49,11 +48,6 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Install Maven
-        run: |
-          apt-get update
-          apt-get install -y maven
-
       - name: Verify Maven Installation
         run: mvn --version
 
@@ -65,40 +59,32 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
 
       - name: Check code format with Spotless
-        run: mvn spotless:check
+        run: mvn -B -ntp spotless:check
         working-directory: ./backend
 
       - name: Build with Maven (skip tests)
-        run: mvn -B verify -DskipTests
+        run: mvn -B -ntp verify -DskipTests
         working-directory: ./backend
 
       - name: Run Tests with Coverage
-        run: mvn verify -Dspring.profiles.active=test
+        run: mvn -B -ntp verify -Dspring.profiles.active=test
         working-directory: ./backend
 
-      - name: Build Docker Image
-        run: mvn spring-boot:build-image
-        env:
-          DOCKER_REGISTRY: docker.io
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          docker_image_prefix: ${{ github.repository }}
-        working-directory: ./backend
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Push Docker Image
-        run: mvn dockerfile:push
-        env:
-          DOCKER_REGISTRY: docker.io
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          docker_image_prefix: ${{ github.repository }}
-        working-directory: ./backend
+      - name: Build and push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: true
+          tags: registry.gitlab.com/uunlu/f1-v1:${{ env.DOCKER_IMAGE_TAG }},registry.gitlab.com/uunlu/f1-v1:latest
 
       - name: Run Container Security Scan with Trivy
         uses: aquasecurity/trivy-action@master
