@@ -31,7 +31,7 @@ import org.springframework.web.client.RestTemplate;
 public class RemoteRaceWinnerService implements RaceWinnerService {
   private static final int MAX_PAGES = 50;
   private static final int MAX_TOTAL = 1000;
-  private static final int DEFAULT_LIMIT = 100;
+  private static final int DEFAULT_LIMIT = 1;
   private static final int RETRY_BACKOFF_DELAY_MS = 1000;
   private static final int TIMEOUT_IN_SECOND = 5;
 
@@ -128,7 +128,7 @@ public class RemoteRaceWinnerService implements RaceWinnerService {
               .toList();
 
       allWinners.addAll(winners);
-      offset += limit;
+      offset += 1;
       pageCount++;
     }
 
