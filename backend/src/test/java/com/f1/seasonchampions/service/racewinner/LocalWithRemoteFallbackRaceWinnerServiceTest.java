@@ -1,8 +1,6 @@
 package com.f1.seasonchampions.service.racewinner;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 import com.f1.seasonchampions.model.Constructor;
@@ -53,10 +51,6 @@ class LocalWithRemoteFallbackRaceWinnerServiceTest {
     raceWinner2023.setDriver(driver);
     raceWinner2023.setConstructor(constructor);
     raceWinner2023.setTime("1:30.000");
-
-    lenient()
-        .when(localService.saveRaceWinner(any(RaceWinner.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
   }
 
   @Test
@@ -69,6 +63,7 @@ class LocalWithRemoteFallbackRaceWinnerServiceTest {
     assertEquals(1, result.size());
     assertEquals(raceWinner2023, result.get(0));
     verify(remoteService, never()).getRaceWinners(anyInt());
+    verify(localService, times(1)).getRaceWinners(2023);
   }
 
   @Test
@@ -76,13 +71,15 @@ class LocalWithRemoteFallbackRaceWinnerServiceTest {
     when(localService.hasCompleteDataForYear(2023)).thenReturn(false);
     when(localService.getRaceWinners(2023)).thenReturn(Collections.emptyList());
     when(remoteService.getRaceWinners(2023)).thenReturn(Collections.singletonList(raceWinner2023));
+    when(localService.saveRaceWinner(raceWinner2023)).thenReturn(raceWinner2023);
 
     List<RaceWinner> result = service.getRaceWinners(2023);
 
+    verify(remoteService, times(1)).getRaceWinners(2023);
+    verify(localService, times(1)).saveRaceWinner(raceWinner2023);
+
     assertEquals(1, result.size());
-    assertEquals(raceWinner2023, result.get(0));
-    verify(remoteService).getRaceWinners(2023);
-    verify(localService).saveRaceWinner(raceWinner2023);
+    assertEquals(raceWinner2023, result.getFirst());
   }
 
   @Test
@@ -98,22 +95,26 @@ class LocalWithRemoteFallbackRaceWinnerServiceTest {
     when(localService.getRaceWinners(2023)).thenReturn(Collections.singletonList(raceWinner2023));
     when(remoteService.getRaceWinners(2023))
         .thenReturn(Arrays.asList(raceWinner2023, raceWinner2023Round2));
+    when(localService.saveRaceWinner(raceWinner2023Round2)).thenReturn(raceWinner2023Round2);
 
     List<RaceWinner> result = service.getRaceWinners(2023);
 
     assertEquals(2, result.size());
     assertEquals("1", result.get(0).getRound());
     assertEquals("2", result.get(1).getRound());
-    verify(remoteService).getRaceWinners(2023);
-    verify(localService, times(2)).saveRaceWinner(any(RaceWinner.class));
+    verify(remoteService, times(1)).getRaceWinners(2023);
+    verify(localService, times(1)).saveRaceWinner(raceWinner2023Round2);
+    verify(localService, never()).saveRaceWinner(raceWinner2023);
   }
 
   @Test
   void whenSavingRaceWinner_thenDelegateToLocalService() {
+    when(localService.saveRaceWinner(raceWinner2023)).thenReturn(raceWinner2023);
+
     RaceWinner result = service.saveRaceWinner(raceWinner2023);
 
     assertEquals(raceWinner2023, result);
-    verify(localService).saveRaceWinner(raceWinner2023);
+    verify(localService, times(1)).saveRaceWinner(raceWinner2023);
     verifyNoInteractions(remoteService);
   }
 
@@ -124,7 +125,7 @@ class LocalWithRemoteFallbackRaceWinnerServiceTest {
     boolean result = service.hasCompleteDataForYear(2023);
 
     assertTrue(result);
-    verify(localService).hasCompleteDataForYear(2023);
+    verify(localService, times(1)).hasCompleteDataForYear(2023);
     verifyNoInteractions(remoteService);
   }
 }

@@ -78,7 +78,7 @@
       <version>2.1.0</version>
     </dependency>
 
-    <!-- PostgreSQL -->
+    <!-- Database Layer: PostgreSQL -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -87,12 +87,6 @@
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <scope>runtime</scope>
-    </dependency>
-
-    <!-- PostgreSQL JDBC Driver -->
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
     </dependency>
 
     <!-- Flyway -->
