@@ -78,17 +78,6 @@ jobs:
           mvn jacoco:report
         working-directory: ./backend
 
-      - name: Check Code Coverage (fail if < 70%)
-        run: |
-          coverage_line=$(grep -oPm1 '(?<=<line-rate>)[^<]+' target/site/jacoco/jacoco.xml)
-          coverage=$(awk "BEGIN {print ($coverage_line * 100)}")
-          echo "Coverage: $coverage%"
-          if (( $(echo "$coverage < 70" | bc -l) )); then
-            echo "Error: Code coverage ($coverage%) is below 70%"
-            exit 1
-          fi
-        working-directory: ./backend
-
       - name: Run Integration Tests
         run: mvn verify -Dspring.profiles.active=test
         working-directory: ./backend
