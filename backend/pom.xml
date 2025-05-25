@@ -109,6 +109,12 @@
 
     <!-- Testing -->
     <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>1.19.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
@@ -128,11 +134,15 @@
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.8.11</version>
         <executions>
+          <!-- Prepares the agent for coverage collection -->
           <execution>
+            <id>prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
             </goals>
           </execution>
+
+          <!-- Generates coverage report after tests -->
           <execution>
             <id>report</id>
             <phase>test</phase>
@@ -152,8 +162,12 @@
               </excludes>
             </configuration>
           </execution>
+
+          <!-- Fails the build if coverage rules are not met -->
           <execution>
-            <id>check</id>
+<!--            <id>jacoco-check</id>-->
+            <id>default-cli</id>
+            <phase>verify</phase>
             <goals>
               <goal>check</goal>
             </goals>
@@ -163,7 +177,7 @@
                   <element>BUNDLE</element>
                   <limits>
                     <limit>
-                      <counter>LINE</counter>
+                      <counter>INSTRUCTION</counter>
                       <value>COVEREDRATIO</value>
                       <minimum>0.70</minimum>
                     </limit>
@@ -367,6 +381,28 @@
           <tag>latest</tag>
         </configuration>
       </plugin>
+
+      <!-- Add target/generated-sources/openapi to compile path-->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>add-generated-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 </project>
