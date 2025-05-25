@@ -55,8 +55,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: \${{ runner.os }}-maven-\${{ hashFiles('backend/pom.xml') }}
-          restore-keys: \${{ runner.os }}-maven-
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
 
       - name: Check code format with Spotless
         run: mvn -B -ntp spotless:check
@@ -79,29 +79,38 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Detect Image Tag
-        id: image-version
-        shell: bash
+      - name: Set Branch-specific Docker Tags
+        id: docker-tags
         run: |
-          # Default tag in case nothing else works
-          DOCKER_IMAGE_TAG="latest"
+          # Get the current branch name
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
 
-          if [ "\$GITHUB_REF_TYPE" = "tag" ]; then
-            DOCKER_IMAGE_TAG="\${GITHUB_REF_NAME#v}"
-          elif [ -n "\$GITHUB_SHA" ]; then
-            DOCKER_IMAGE_TAG="\${GITHUB_SHA::7}"
+          # Get commit SHA for tagging
+          SHORT_SHA=${GITHUB_SHA::7}
+
+          # Generate timestamp for unique tagging
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+          # Set different tags based on branch
+          if [ "$BRANCH_NAME" = "main" ]; then
+            # For main branch: stable, main-sha
+            echo "DOCKER_TAGS=ugurunlu/f1-app-v1:stable,ugurunlu/f1-app-v1:main-${SHORT_SHA}" >> $GITHUB_ENV
+            echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:stable" >> $GITHUB_ENV
+          elif [ "$BRANCH_NAME" = "develop" ]; then
+            # For develop branch: latest, dev-sha
+            echo "DOCKER_TAGS=ugurunlu/f1-app-v1:latest,ugurunlu/f1-app-v1:dev-${SHORT_SHA}" >> $GITHUB_ENV
+            echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:latest" >> $GITHUB_ENV
+          else
+            # For other branches/PRs: branch-name-timestamp
+            # Replace slashes and other invalid characters in branch name
+            SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '/' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-zA-Z0-9-]/-/g')
+            echo "DOCKER_TAGS=ugurunlu/f1-app-v1:${SAFE_BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_ENV
+            echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:${SAFE_BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_ENV
           fi
 
-          # Make sure tag is not empty and valid
-          if [ -z "\$DOCKER_IMAGE_TAG" ] || [ "\$DOCKER_IMAGE_TAG" = " " ]; then
-            DOCKER_IMAGE_TAG="latest"
-          fi
-
-          echo "DOCKER_IMAGE_TAG=\$DOCKER_IMAGE_TAG" >> \$GITHUB_OUTPUT
-          # Also set as environment variable
-          echo "DOCKER_IMAGE_TAG=\$DOCKER_IMAGE_TAG" >> \$GITHUB_ENV
-          # Print for debugging
-          echo "Set image tag to: \$DOCKER_IMAGE_TAG"
+          # Debug output
+          echo "Branch: $BRANCH_NAME"
+          echo "Tags: $DOCKER_TAGS"
 
       - name: Build and push Docker Image
         uses: docker/build-push-action@v6
@@ -109,19 +118,19 @@ jobs:
           context: .
           file: backend/Dockerfile
           push: true
-          tags: ugurunlu/f1-app-v1:latest
+          tags: ${{ env.DOCKER_TAGS }}
 
       # Verify the image exists before scanning
       - name: Verify Docker Image Exists
         run: |
           echo "Waiting for image to be available..."
-          docker pull ugurunlu/f1-app-v1:latest
+          docker pull ${{ env.IMAGE_FOR_SCAN }}
 
-      # Fix the image-ref to use the correct Docker Hub repository
+      # Run security scan on the appropriate tagged image
       - name: Run Container Security Scan with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ugurunlu/f1-app-v1:latest
+          image-ref: ${{ env.IMAGE_FOR_SCAN }}
           format: 'table'
           exit-code: '1'
           severity: 'HIGH,CRITICAL'
