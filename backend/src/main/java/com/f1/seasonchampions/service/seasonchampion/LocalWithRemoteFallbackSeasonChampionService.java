@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service;
+package com.f1.seasonchampions.service.seasonchampion;
 
 import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.SeasonChampion;

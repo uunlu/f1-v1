@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service;
+package com.f1.seasonchampions.service.seasonchampion;
 
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;

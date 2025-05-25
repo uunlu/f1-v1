@@ -9,6 +9,8 @@ import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.service.racewinner.RaceWinnerService;
 import java.util.List;
+
+import com.f1.seasonchampions.service.seasonchampion.SeasonChampionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;

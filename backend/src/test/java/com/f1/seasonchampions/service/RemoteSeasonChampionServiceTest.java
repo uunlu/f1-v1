@@ -9,6 +9,8 @@ import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
 import java.util.List;
+
+import com.f1.seasonchampions.service.seasonchampion.RemoteSeasonChampionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,7 +1,8 @@
-package com.f1.seasonchampions.service;
+package com.f1.seasonchampions.service.seasonchampion;
 
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
+import com.f1.seasonchampions.service.F1ApiClient;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;

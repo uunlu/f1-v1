@@ -3,7 +3,7 @@ package com.f1.seasonchampions.controller;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import com.f1.seasonchampions.service.SeasonChampionService;
+import com.f1.seasonchampions.service.seasonchampion.SeasonChampionService;
 import com.f1.seasonchampions.service.racewinner.RaceWinnerService;
 import com.f1.seasonchampions.validation.CurrentYearConstraint;
 import io.swagger.v3.oas.annotations.Operation;
