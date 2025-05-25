@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 jobs:
   build:
@@ -55,8 +55,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
+          key: \${{ runner.os }}-maven-\${{ hashFiles('backend/pom.xml') }}
+          restore-keys: \${{ runner.os }}-maven-
 
       - name: Check code format with Spotless
         run: mvn -B -ntp spotless:check
@@ -83,24 +83,45 @@ jobs:
         id: image-version
         shell: bash
         run: |
-          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
-            DOCKER_IMAGE_TAG="${GITHUB_REF_NAME#v}"
-          else
-            DOCKER_IMAGE_TAG="${GITHUB_SHA::7}"
+          # Default tag in case nothing else works
+          DOCKER_IMAGE_TAG="latest"
+
+          if [ "\$GITHUB_REF_TYPE" = "tag" ]; then
+            DOCKER_IMAGE_TAG="\${GITHUB_REF_NAME#v}"
+          elif [ -n "\$GITHUB_SHA" ]; then
+            DOCKER_IMAGE_TAG="\${GITHUB_SHA::7}"
           fi
-          echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
+
+          # Make sure tag is not empty and valid
+          if [ -z "\$DOCKER_IMAGE_TAG" ] || [ "\$DOCKER_IMAGE_TAG" = " " ]; then
+            DOCKER_IMAGE_TAG="latest"
+          fi
+
+          echo "DOCKER_IMAGE_TAG=\$DOCKER_IMAGE_TAG" >> \$GITHUB_OUTPUT
+          # Also set as environment variable
+          echo "DOCKER_IMAGE_TAG=\$DOCKER_IMAGE_TAG" >> \$GITHUB_ENV
+          # Print for debugging
+          echo "Set image tag to: \$DOCKER_IMAGE_TAG"
 
       - name: Build and push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: backend
+          context: .
+          file: backend/Dockerfile
           push: true
-          tags: uunlu/f1-v1:${{ env.DOCKER_IMAGE_TAG }},uunlu/f1-v1:latest
+          tags: ugurunlu/f1-app-v1:latest
 
+      # Verify the image exists before scanning
+      - name: Verify Docker Image Exists
+        run: |
+          echo "Waiting for image to be available..."
+          docker pull ugurunlu/f1-app-v1:latest
+
+      # Fix the image-ref to use the correct Docker Hub repository
       - name: Run Container Security Scan with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ github.repository }}:latest
+          image-ref: ugurunlu/f1-app-v1:latest
           format: 'table'
           exit-code: '1'
           severity: 'HIGH,CRITICAL'
