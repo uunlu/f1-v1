@@ -2,9 +2,8 @@ package com.f1.seasonchampions.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.Year;
-
 import com.f1.seasonchampions.validation.CurrentYearValidator;
+import java.time.Year;
 import org.junit.jupiter.api.Test;
 
 class CurrentYearValidatorTest {

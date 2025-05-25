@@ -32,7 +32,7 @@ class SeasonChampionControllerTest {
     // Arrange
     var mockChampion = new SeasonChampion();
     when(seasonChampionService.getSeasonChampions(new SeasonRangeRequest(2005, 2024)))
-      .thenReturn(List.of(mockChampion));
+        .thenReturn(List.of(mockChampion));
 
     // Act
     ResponseEntity<List<SeasonChampion>> response = controller.getSeasonChampions(2005, 2024);

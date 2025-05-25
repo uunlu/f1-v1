@@ -50,9 +50,9 @@ class F1ApiClientTest {
     standingsTable.setSeason("2023");
 
     var standingsListInner =
-      new DriverStandingsByYearResponseMRDataStandingsTableStandingsListsInner();
+        new DriverStandingsByYearResponseMRDataStandingsTableStandingsListsInner();
     var driverStanding =
-      new DriverStandingsByYearResponseMRDataStandingsTableStandingsListsInnerDriverStandingsInner();
+        new DriverStandingsByYearResponseMRDataStandingsTableStandingsListsInnerDriverStandingsInner();
 
     driverStanding.setDriver(dtoDriver);
     driverStanding.setConstructors(List.of(constructorDto));
@@ -66,8 +66,10 @@ class F1ApiClientTest {
     mrData.setStandingsTable(standingsTable);
     response.setMrData(mrData);
 
-    when(restTemplate.getForObject("https://api.jolpi.ca/ergast/f1/2023/driverstandings/", DriverStandingsByYearResponse.class))
-      .thenReturn(response);
+    when(restTemplate.getForObject(
+            "https://api.jolpi.ca/ergast/f1/2023/driverstandings/",
+            DriverStandingsByYearResponse.class))
+        .thenReturn(response);
 
     // Act
     SeasonChampion result = f1ApiClient.fetchChampionForSeason(2023);
@@ -82,7 +84,7 @@ class F1ApiClientTest {
   @Test
   void whenFetchChampionResponseIsNull_thenReturnNull() {
     when(restTemplate.getForObject(anyString(), eq(DriverStandingsByYearResponse.class)))
-      .thenReturn(null);
+        .thenReturn(null);
 
     SeasonChampion result = f1ApiClient.fetchChampionForSeason(2023);
 
@@ -92,12 +94,11 @@ class F1ApiClientTest {
   @Test
   void whenRestCallFails_thenThrowF1ApiException() {
     when(restTemplate.getForObject(anyString(), eq(DriverStandingsByYearResponse.class)))
-      .thenThrow(new RuntimeException("Timeout"));
+        .thenThrow(new RuntimeException("Timeout"));
 
-    F1ApiClient.F1ApiException ex = assertThrows(
-      F1ApiClient.F1ApiException.class,
-      () -> f1ApiClient.fetchChampionForSeason(2023)
-    );
+    F1ApiClient.F1ApiException ex =
+        assertThrows(
+            F1ApiClient.F1ApiException.class, () -> f1ApiClient.fetchChampionForSeason(2023));
 
     assertTrue(ex.getMessage().contains("Failed to fetch champion data"));
   }
