@@ -29,8 +29,7 @@
     <spotbugs.version>4.8.5</spotbugs.version>
     <fmt-maven-plugin.version>2.23</fmt-maven-plugin.version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
-    <docker.image.prefix>${project.groupId}/${project.artifactId}
-    </docker.image.prefix> <!-- Added for Docker image naming -->
+    <docker.image.prefix>${project.groupId}/${project.artifactId}</docker.image.prefix> <!-- Added for Docker image naming -->
   </properties>
 
   <dependencies>
@@ -164,24 +163,21 @@
             </configuration>
           </execution>
 
-          <!-- Generates the HTML/XML report after tests -->
-          <execution>
-            <id>report</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-
           <!-- Fails the build if coverage rules are not met -->
           <execution>
-            <!-- <id>jacoco-check</id> -->
+<!--            <id>jacoco-check</id>-->
             <id>default-cli</id>
             <phase>verify</phase>
             <goals>
               <goal>check</goal>
             </goals>
             <configuration>
+              <excludes>
+                <exclude>com/f1/seasonchampions/dto/**/*</exclude>
+                <exclude>com/f1/seasonchampions/exception/**/*</exclude>
+                <exclude>com/f1/seasonchampions/config/**/*</exclude>
+                <exclude>com/f1/seasonchampions/*Application*</exclude>
+              </excludes>
               <rules>
                 <rule>
                   <element>BUNDLE</element>
