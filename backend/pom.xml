@@ -134,11 +134,15 @@
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.8.11</version>
         <executions>
+          <!-- Prepares the agent for coverage collection -->
           <execution>
+            <id>prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
             </goals>
           </execution>
+
+          <!-- Generates coverage report after tests -->
           <execution>
             <id>report</id>
             <phase>test</phase>
@@ -158,8 +162,12 @@
               </excludes>
             </configuration>
           </execution>
+
+          <!-- Fails the build if coverage rules are not met -->
           <execution>
-            <id>check</id>
+<!--            <id>jacoco-check</id>-->
+            <id>default-cli</id>
+            <phase>verify</phase>
             <goals>
               <goal>check</goal>
             </goals>
@@ -169,7 +177,7 @@
                   <element>BUNDLE</element>
                   <limits>
                     <limit>
-                      <counter>LINE</counter>
+                      <counter>INSTRUCTION</counter>
                       <value>COVEREDRATIO</value>
                       <minimum>0.10</minimum>
                     </limit>
