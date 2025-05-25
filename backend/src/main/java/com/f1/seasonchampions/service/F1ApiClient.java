@@ -4,6 +4,8 @@ import com.f1.seasonchampions.dto.Driver;
 import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.SeasonChampion;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +22,7 @@ public class F1ApiClient {
   @Value("https://api.jolpi.ca/ergast/")
   private String baseUrl;
 
+  @Nullable
   public SeasonChampion fetchChampionForSeason(final int year) {
     log.info("Fetching F1 champion data for year: {}", year);
 
@@ -41,8 +44,9 @@ public class F1ApiClient {
     }
   }
 
+  @NotNull
   private SeasonChampion mapToSeasonChampion(
-      final DriverStandingsByYearResponse response, final String year) {
+      @NotNull final DriverStandingsByYearResponse response, @NotNull final String year) {
     final Driver driverDto =
         response
             .getMrData()

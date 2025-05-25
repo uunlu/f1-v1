@@ -3,6 +3,7 @@ package com.f1.seasonchampions.service;
 import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,7 +26,8 @@ public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChamp
 
   @Override
   @Transactional
-  public List<SeasonChampion> getSeasonChampions(final SeasonRangeRequest request) {
+  @NotNull
+  public List<SeasonChampion> getSeasonChampions(@NotNull final SeasonRangeRequest request) {
     if (request.getStartYear() > request.getEndYear()) {
       throw new InvalidInputException("Start year cannot be greater than end year");
     }
@@ -65,7 +67,8 @@ public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChamp
 
   @Override
   @Transactional
-  public SeasonChampion saveChampion(final SeasonChampion champion) {
+  @NotNull
+  public SeasonChampion saveChampion(@NotNull final SeasonChampion champion) {
     return this.localService.saveChampion(champion);
   }
 }
