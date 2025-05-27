@@ -24,8 +24,8 @@ public class LocalRaceWinnerService implements RaceWinnerService {
   public List<RaceWinner> getRaceWinners(final int year) {
     log.info("Fetching race winners from local database for year: {}", year);
     //    return this.raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
-    List<RaceWinner> winners =
-        raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
+    final List<RaceWinner> winners =
+        this.raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
     log.info("Fetched {} race winners", winners.size());
     for (RaceWinner winner : winners) {
       log.info(
