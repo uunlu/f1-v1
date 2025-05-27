@@ -8,11 +8,10 @@ import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.repository.SeasonChampionRepository;
+import com.f1.seasonchampions.service.seasonchampion.LocalSeasonChampionService;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import com.f1.seasonchampions.service.seasonchampion.LocalSeasonChampionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
