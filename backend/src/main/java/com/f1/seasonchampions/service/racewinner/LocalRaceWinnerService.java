@@ -23,7 +23,14 @@ public class LocalRaceWinnerService implements RaceWinnerService {
   @Transactional(readOnly = true)
   public List<RaceWinner> getRaceWinners(final int year) {
     log.info("Fetching race winners from local database for year: {}", year);
-    return this.raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
+//    return this.raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
+    List<RaceWinner> winners = raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
+    log.info("Fetched {} race winners", winners.size());
+    for (RaceWinner winner : winners) {
+      log.info("Race: {}, Round: {}, Winner: {}", winner.getSeason(), winner.getRound(), winner.getDriver().getGivenName());
+    }
+    return winners;
+
   }
 
   @Override
