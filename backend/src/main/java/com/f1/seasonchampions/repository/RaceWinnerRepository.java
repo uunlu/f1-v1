@@ -15,4 +15,6 @@ public interface RaceWinnerRepository extends JpaRepository<RaceWinner, Long> {
           + "rw WHERE rw.season = :season AND (:round IS NULL OR rw.round = :round) ORDER BY rw.round")
   List<RaceWinner> findBySeasonAndOptionalRound(
       @Param("season") String season, @Param("round") String round);
+
+  List<RaceWinner> findBySeason(String season);
 }
