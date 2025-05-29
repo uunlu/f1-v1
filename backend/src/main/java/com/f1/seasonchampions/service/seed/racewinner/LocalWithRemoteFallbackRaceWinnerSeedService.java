@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service.racewinner;
+package com.f1.seasonchampions.service.seed.racewinner;
 
 import com.f1.seasonchampions.model.RaceWinner;
 import java.util.List;
@@ -12,9 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Primary
 @Slf4j
-public class LocalWithRemoteFallbackRaceWinnerService implements RaceWinnerService {
-  private final LocalRaceWinnerService localService;
-  private final RemoteRaceWinnerService remoteService;
+public class LocalWithRemoteFallbackRaceWinnerSeedService implements RaceWinnerSeedService {
+  private final LocalRaceWinnerSeedService localService;
+  private final RemoteRaceWinnerSeedService remoteService;
 
   @Override
   @Transactional

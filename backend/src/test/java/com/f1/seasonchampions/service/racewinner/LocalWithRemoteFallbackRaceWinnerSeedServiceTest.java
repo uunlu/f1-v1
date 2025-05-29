@@ -6,6 +6,9 @@ import static org.mockito.Mockito.*;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.RaceWinner;
+import com.f1.seasonchampions.service.seed.racewinner.LocalRaceWinnerSeedService;
+import com.f1.seasonchampions.service.seed.racewinner.LocalWithRemoteFallbackRaceWinnerSeedService;
+import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -17,11 +20,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class LocalWithRemoteFallbackRaceWinnerServiceTest {
-  @Mock private LocalRaceWinnerService localService;
-  @Mock private RemoteRaceWinnerService remoteService;
+class LocalWithRemoteFallbackRaceWinnerSeedServiceTest {
+  @Mock private LocalRaceWinnerSeedService localService;
+  @Mock private RemoteRaceWinnerSeedService remoteService;
 
-  @InjectMocks private LocalWithRemoteFallbackRaceWinnerService service;
+  @InjectMocks private LocalWithRemoteFallbackRaceWinnerSeedService service;
 
   private RaceWinner raceWinner2023;
   private Driver driver;

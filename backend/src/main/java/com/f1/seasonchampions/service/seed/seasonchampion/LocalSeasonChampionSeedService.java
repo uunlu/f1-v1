@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service.seasonchampion;
+package com.f1.seasonchampions.service.seed.seasonchampion;
 
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LocalSeasonChampionService implements SeasonChampionService {
+public class LocalSeasonChampionSeedService implements SeasonChampionSeedService {
 
   private final SeasonChampionRepository seasonChampionRepository;
 
@@ -26,6 +26,13 @@ public class LocalSeasonChampionService implements SeasonChampionService {
 
     return this.seasonChampionRepository.findBySeasonBetweenOrderBySeason(
         String.valueOf(request.getStartYear()), String.valueOf(request.getEndYear()));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<SeasonChampion> getAllSeasonChampions() {
+    log.info("Fetching all season champions from local database");
+    return this.seasonChampionRepository.findAll();
   }
 
   @Override

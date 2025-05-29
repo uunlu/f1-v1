@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service.seasonchampion;
+package com.f1.seasonchampions.service.seed.seasonchampion;
 
 import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.SeasonChampion;
@@ -19,10 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Primary
 @Slf4j
-public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChampionService {
+public class LocalWithRemoteFallbackSeasonChampionSeedService implements SeasonChampionSeedService {
 
-  private final LocalSeasonChampionService localService;
-  private final RemoteSeasonChampionService remoteService;
+  private final LocalSeasonChampionSeedService localService;
+  private final RemoteSeasonChampionSeedService remoteService;
 
   @Override
   @Transactional
@@ -63,6 +63,30 @@ public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChamp
 
     log.info("Retrieved {} champions from combined sources", result.size());
     return result;
+  }
+
+  @Override
+  @Transactional
+  @NotNull
+  public List<SeasonChampion> getAllSeasonChampions() {
+    log.info("Fetching all season champions with local+remote fallback strategy");
+
+    // TODO: read from yml
+    final int startYear = 2005;
+    final int endYear = java.time.Year.now().getValue();
+    final SeasonRangeRequest fullRangeRequest = new SeasonRangeRequest(startYear, endYear);
+
+    // Check if we have complete data locally
+    if (this.localService.hasCompleteDataForRange(fullRangeRequest)) {
+      log.info("Returning all champions from local database (complete data)");
+      return this.localService.getAllSeasonChampions();
+    }
+
+    log.info(
+        "Local data incomplete, fetching from combined sources for years {}-{}",
+        startYear,
+        endYear);
+    return this.getSeasonChampions(fullRangeRequest);
   }
 
   @Override
