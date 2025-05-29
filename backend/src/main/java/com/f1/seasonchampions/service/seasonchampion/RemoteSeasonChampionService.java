@@ -71,6 +71,17 @@ public class RemoteSeasonChampionService implements SeasonChampionService {
   }
 
   @Override
+  public List<SeasonChampion> getAllSeasonChampions() {
+    log.info("Fetching all season champions from remote API");
+
+    // TODO: read from yml file
+    final int startYear = 2005;
+    final int endYear = java.time.Year.now().getValue();
+
+    return getSeasonChampions(new SeasonRangeRequest(startYear, endYear));
+  }
+
+  @Override
   public SeasonChampion saveChampion(final SeasonChampion champion) {
     // Remote service doesn't save anything
     return champion;

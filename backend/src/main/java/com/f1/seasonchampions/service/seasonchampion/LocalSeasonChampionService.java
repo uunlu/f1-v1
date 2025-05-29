@@ -29,6 +29,13 @@ public class LocalSeasonChampionService implements SeasonChampionService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<SeasonChampion> getAllSeasonChampions() {
+    log.info("Fetching all season champions from local database");
+    return this.seasonChampionRepository.findAll();
+  }
+
+  @Override
   @Transactional
   public SeasonChampion saveChampion(final SeasonChampion champion) {
     log.debug("Saving champion to database: {}", champion);

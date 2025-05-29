@@ -33,6 +33,22 @@ public class SeasonChampionController {
   private final SeasonChampionService seasonChampionService;
   private final RaceWinnerService raceWinnerService;
 
+  @GetMapping("/seasons")
+  @Operation(
+      summary = "Get all F1 seasons",
+      description = "Retrieves all available F1 seasons with basic information")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved all seasons"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<List<SeasonChampion>> getAllSeasons() {
+    log.info("Received request for all F1 seasons");
+    List<SeasonChampion> seasons = seasonChampionService.getAllSeasonChampions();
+    log.info("Returning {} seasons", seasons.size());
+    return ResponseEntity.ok(seasons);
+  }
+
   @GetMapping("/season-champions")
   @Operation(
       summary = "Get season champions",

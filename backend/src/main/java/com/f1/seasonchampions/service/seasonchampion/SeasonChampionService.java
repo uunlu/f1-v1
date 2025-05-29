@@ -10,5 +10,8 @@ public interface SeasonChampionService {
   List<SeasonChampion> getSeasonChampions(@NotNull SeasonRangeRequest request);
 
   @NotNull
+  List<SeasonChampion> getAllSeasonChampions();
+
+  @NotNull
   SeasonChampion saveChampion(@NotNull SeasonChampion champion);
 }
