@@ -86,7 +86,7 @@ public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChamp
         "Local data incomplete, fetching from combined sources for years {}-{}",
         startYear,
         endYear);
-    return getSeasonChampions(fullRangeRequest);
+    return this.getSeasonChampions(fullRangeRequest);
   }
 
   @Override

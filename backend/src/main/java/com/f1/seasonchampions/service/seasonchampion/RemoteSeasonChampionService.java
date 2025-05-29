@@ -78,7 +78,7 @@ public class RemoteSeasonChampionService implements SeasonChampionService {
     final int startYear = 2005;
     final int endYear = java.time.Year.now().getValue();
 
-    return getSeasonChampions(new SeasonRangeRequest(startYear, endYear));
+    return this.getSeasonChampions(new SeasonRangeRequest(startYear, endYear));
   }
 
   @Override
