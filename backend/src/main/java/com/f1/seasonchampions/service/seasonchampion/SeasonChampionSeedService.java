@@ -5,7 +5,7 @@ import com.f1.seasonchampions.model.SeasonRangeRequest;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
-public interface SeasonChampionService {
+public interface SeasonChampionSeedService {
   @NotNull
   List<SeasonChampion> getSeasonChampions(@NotNull SeasonRangeRequest request);
 

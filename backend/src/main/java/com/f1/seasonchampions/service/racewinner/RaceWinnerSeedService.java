@@ -4,7 +4,7 @@ import com.f1.seasonchampions.model.RaceWinner;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
-public interface RaceWinnerService {
+public interface RaceWinnerSeedService {
   @NotNull
   List<RaceWinner> getRaceWinners(int year);
 

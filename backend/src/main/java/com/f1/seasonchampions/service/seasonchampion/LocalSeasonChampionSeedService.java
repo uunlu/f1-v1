@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LocalSeasonChampionService implements SeasonChampionService {
+public class LocalSeasonChampionSeedService implements SeasonChampionSeedService {
 
   private final SeasonChampionRepository seasonChampionRepository;
 

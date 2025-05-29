@@ -21,13 +21,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class LocalRaceWinnerServiceTest {
+class LocalRaceWinnerSeedServiceTest {
 
   @Mock private RaceWinnerRepository raceWinnerRepository;
   @Mock private DriverRepository driverRepository;
   @Mock private ConstructorRepository constructorRepository;
 
-  @InjectMocks private LocalRaceWinnerService service;
+  @InjectMocks private LocalRaceWinnerSeedService service;
 
   private RaceWinner raceWinner2023;
   private Driver driver;

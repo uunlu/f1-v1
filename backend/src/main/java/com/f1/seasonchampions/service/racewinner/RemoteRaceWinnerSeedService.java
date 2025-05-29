@@ -28,7 +28,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RemoteRaceWinnerService implements RaceWinnerService {
+public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
   private static final int MAX_PAGES = 50;
   private static final int MAX_TOTAL = 1000;
   private static final int DEFAULT_LIMIT = 1;

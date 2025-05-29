@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RemoteSeasonChampionService implements SeasonChampionService {
+public class RemoteSeasonChampionSeedService implements SeasonChampionSeedService {
   private static final int TIMEOUT_IN_SECOND = 5;
 
   private final F1ApiClient f1ApiClient;

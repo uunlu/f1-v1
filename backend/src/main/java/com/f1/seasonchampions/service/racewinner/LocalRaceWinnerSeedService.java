@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LocalRaceWinnerService implements RaceWinnerService {
+public class LocalRaceWinnerSeedService implements RaceWinnerSeedService {
   private final RaceWinnerRepository raceWinnerRepository;
   private final DriverRepository driverRepository;
   private final ConstructorRepository constructorRepository;

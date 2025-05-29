@@ -19,10 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Primary
 @Slf4j
-public class LocalWithRemoteFallbackSeasonChampionService implements SeasonChampionService {
+public class LocalWithRemoteFallbackSeasonChampionSeedService implements SeasonChampionSeedService {
 
-  private final LocalSeasonChampionService localService;
-  private final RemoteSeasonChampionService remoteService;
+  private final LocalSeasonChampionSeedService localService;
+  private final RemoteSeasonChampionSeedService remoteService;
 
   @Override
   @Transactional

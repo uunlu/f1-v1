@@ -8,7 +8,7 @@ import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import com.f1.seasonchampions.service.seasonchampion.RemoteSeasonChampionService;
+import com.f1.seasonchampions.service.seasonchampion.RemoteSeasonChampionSeedService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,10 +18,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class RemoteSeasonChampionServiceTest {
+class RemoteSeasonChampionSeedServiceTest {
   @Mock private F1ApiClient f1ApiClient;
 
-  @InjectMocks private RemoteSeasonChampionService service;
+  @InjectMocks private RemoteSeasonChampionSeedService service;
 
   private SeasonChampion champion2021;
   private SeasonChampion champion2022;

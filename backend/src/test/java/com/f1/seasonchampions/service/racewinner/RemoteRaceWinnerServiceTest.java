@@ -27,7 +27,7 @@ import org.springframework.web.client.RestTemplate;
 class RemoteRaceWinnerServiceTest {
   @Mock private RestTemplate restTemplate;
 
-  @InjectMocks private RemoteRaceWinnerService service;
+  @InjectMocks private RemoteRaceWinnerSeedService service;
 
   private ResultsByYearResponse mockResponse;
   private Race mockRace;

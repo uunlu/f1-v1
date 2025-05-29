@@ -17,11 +17,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class LocalWithRemoteFallbackRaceWinnerServiceTest {
-  @Mock private LocalRaceWinnerService localService;
-  @Mock private RemoteRaceWinnerService remoteService;
+class LocalWithRemoteFallbackRaceWinnerSeedServiceTest {
+  @Mock private LocalRaceWinnerSeedService localService;
+  @Mock private RemoteRaceWinnerSeedService remoteService;
 
-  @InjectMocks private LocalWithRemoteFallbackRaceWinnerService service;
+  @InjectMocks private LocalWithRemoteFallbackRaceWinnerSeedService service;
 
   private RaceWinner raceWinner2023;
   private Driver driver;
