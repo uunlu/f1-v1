@@ -9,6 +9,10 @@ import com.f1.seasonchampions.model.RaceWinner;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import com.f1.seasonchampions.service.seed.racewinner.LocalRaceWinnerSeedService;
+import com.f1.seasonchampions.service.seed.racewinner.LocalWithRemoteFallbackRaceWinnerSeedService;
+import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

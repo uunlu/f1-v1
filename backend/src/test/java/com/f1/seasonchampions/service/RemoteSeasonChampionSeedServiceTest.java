@@ -8,7 +8,7 @@ import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import com.f1.seasonchampions.service.seasonchampion.RemoteSeasonChampionSeedService;
+import com.f1.seasonchampions.service.seed.seasonchampion.RemoteSeasonChampionSeedService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

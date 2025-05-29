@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service.racewinner;
+package com.f1.seasonchampions.service.seed.racewinner;
 
 import com.f1.seasonchampions.model.RaceWinner;
 import java.util.List;
