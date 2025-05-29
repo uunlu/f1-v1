@@ -34,7 +34,11 @@ public class Constructor {
   @Column(name = "season")
   private String season;
 
-  public Constructor(final String constructorId, final String name, final String nationality, final String season) {
+  public Constructor(
+      final String constructorId,
+      final String name,
+      final String nationality,
+      final String season) {
     this.constructorId = constructorId;
     this.name = name;
     this.nationality = nationality;

@@ -71,7 +71,8 @@ public class SeedDataController {
 
     log.info("Received request for season champions from {} to {}", startYear, endYear);
     final SeasonRangeRequest request = new SeasonRangeRequest(startYear, endYear);
-    final List<SeasonChampion> champions = this.seasonChampionSeedService.getSeasonChampions(request);
+    final List<SeasonChampion> champions =
+        this.seasonChampionSeedService.getSeasonChampions(request);
     log.info("Returning {} season champions", champions.size());
     return ResponseEntity.ok(champions);
   }

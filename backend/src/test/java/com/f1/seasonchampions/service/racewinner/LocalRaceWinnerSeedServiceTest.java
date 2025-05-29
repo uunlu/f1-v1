@@ -9,12 +9,11 @@ import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.repository.ConstructorRepository;
 import com.f1.seasonchampions.repository.DriverRepository;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
+import com.f1.seasonchampions.service.seed.racewinner.LocalRaceWinnerSeedService;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import com.f1.seasonchampions.service.seed.racewinner.LocalRaceWinnerSeedService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

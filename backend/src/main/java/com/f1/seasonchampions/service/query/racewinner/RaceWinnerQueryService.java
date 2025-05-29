@@ -5,11 +5,10 @@ import com.f1.seasonchampions.repository.ConstructorRepository;
 import com.f1.seasonchampions.repository.DriverRepository;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

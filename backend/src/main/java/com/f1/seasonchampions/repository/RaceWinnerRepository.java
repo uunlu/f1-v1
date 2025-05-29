@@ -15,10 +15,10 @@ public interface RaceWinnerRepository extends JpaRepository<RaceWinner, Long> {
       "SELECT rw FROM RaceWinner "
           + "rw WHERE rw.season = :season AND (:round IS NULL OR rw.round = :round) ORDER BY rw.round")
   List<RaceWinner> findBySeasonAndOptionalRound(
-    @Param("season") String season, @Param("round") String round);
+      @Param("season") String season, @Param("round") String round);
 
   @Query(
-    """
+      """
     SELECT\s
         rw.season AS seasonName,
         rw.round AS round,
@@ -32,8 +32,7 @@ public interface RaceWinnerRepository extends JpaRepository<RaceWinner, Long> {
     WHERE rw.season = :season
     ORDER BY CAST(rw.round AS integer)
 """)
-  List<RaceWinnerListItem> findBySeasonAndOptionalRound2(
-    @Param("season") String season);
+  List<RaceWinnerListItem> findBySeasonAndOptionalRound2(@Param("season") String season);
 
   List<RaceWinner> getRaceWinnerBySeason(String season);
 }

@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/f1")
 @Tag(
-  name = "F1 Public API",
-  description = "Public APIs for retrieving F1 race winners and season information")
+    name = "F1 Public API",
+    description = "Public APIs for retrieving F1 race winners and season information")
 @RequiredArgsConstructor
 public class FormulaOneController {
 
@@ -32,16 +32,17 @@ public class FormulaOneController {
 
   @GetMapping("/race-winners/{season}")
   @Operation(
-    summary = "Get race winners for a specific season",
-    description = "Retrieves all race winners from the database for the specified F1 season")
+      summary = "Get race winners for a specific season",
+      description = "Retrieves all race winners from the database for the specified F1 season")
   @ApiResponses(
-    value = {
-      @ApiResponse(responseCode = "200", description = "Successfully retrieved race winners"),
-      @ApiResponse(responseCode = "404", description = "No data found for the given season"),
-      @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+      value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved race winners"),
+        @ApiResponse(responseCode = "404", description = "No data found for the given season"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
   public ResponseEntity<List<RaceWinnerListItem>> getRaceWinnersBySeason(
-    @Parameter(description = "Year of the F1 season (e.g., 2022)") @PathVariable final int season) {
+      @Parameter(description = "Year of the F1 season (e.g., 2022)") @PathVariable
+          final int season) {
 
     log.info("Received public request for race winners of season {}", season);
     final List<RaceWinnerListItem> winners = this.raceWinnerQueryService.getWinnersBySeason(season);
@@ -51,13 +52,13 @@ public class FormulaOneController {
 
   @GetMapping("/seasons")
   @Operation(
-    summary = "Get all available F1 seasons",
-    description = "Retrieves a list of all seasons for which data is available in the system")
+      summary = "Get all available F1 seasons",
+      description = "Retrieves a list of all seasons for which data is available in the system")
   @ApiResponses(
-    value = {
-      @ApiResponse(responseCode = "200", description = "Successfully retrieved season list"),
-      @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
+      value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved season list"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
   public ResponseEntity<List<SeasonChampionListItem>> getAllSeasons() {
     log.info("Received public request for all available F1 seasons");
     final List<SeasonChampionListItem> seasons = this.seasonChampionQueryService.getAllSeasons();

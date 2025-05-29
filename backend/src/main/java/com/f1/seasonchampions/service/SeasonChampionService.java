@@ -25,10 +25,9 @@ public class SeasonChampionService {
     champion.setDriver(winner.getDriver());
 
     final Constructor constructor = winner.getConstructor();
-    constructor.setSeason(season);  // Set the season for the constructor
+    constructor.setSeason(season); // Set the season for the constructor
     champion.setConstructor(constructor);
 
     return champion;
   }
 }
-

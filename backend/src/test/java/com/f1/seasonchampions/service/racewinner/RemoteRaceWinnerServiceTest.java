@@ -1,7 +1,6 @@
 package com.f1.seasonchampions.service.racewinner;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -11,10 +10,9 @@ import com.f1.seasonchampions.dto.ResultsByYearResponse;
 import com.f1.seasonchampions.dto.ResultsByYearResponseMRData;
 import com.f1.seasonchampions.dto.ResultsByYearResponseMRDataRaceTable;
 import com.f1.seasonchampions.model.RaceWinner;
+import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
 import java.util.Collections;
 import java.util.List;
-
-import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -116,7 +114,8 @@ class RemoteRaceWinnerServiceTest {
     // First page response
     ResultsByYearResponseMRData firstPageData = new ResultsByYearResponseMRData();
     firstPageData.setTotal("60"); // Set total to require multiple pages
-    ResultsByYearResponseMRDataRaceTable firstPageTable = new ResultsByYearResponseMRDataRaceTable();
+    ResultsByYearResponseMRDataRaceTable firstPageTable =
+        new ResultsByYearResponseMRDataRaceTable();
     Race firstRace = mockRace; // This already has position="1" from setUp
     firstPageTable.setRaces(Collections.singletonList(firstRace));
     firstPageData.setRaceTable(firstPageTable);
@@ -126,7 +125,8 @@ class RemoteRaceWinnerServiceTest {
     // Second page response
     ResultsByYearResponseMRData secondPageData = new ResultsByYearResponseMRData();
     secondPageData.setTotal("60"); // Same total as first page
-    ResultsByYearResponseMRDataRaceTable secondPageTable = new ResultsByYearResponseMRDataRaceTable();
+    ResultsByYearResponseMRDataRaceTable secondPageTable =
+        new ResultsByYearResponseMRDataRaceTable();
     Race secondRace = new Race();
     secondRace.setSeason("2023");
     secondRace.setRound("2");
@@ -143,7 +143,7 @@ class RemoteRaceWinnerServiceTest {
     // Mock responses for specific URLs
     String firstPageUrl = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=0";
     String secondPageUrl = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=30";
-    
+
     when(restTemplate.getForEntity(eq(firstPageUrl), eq(ResultsByYearResponse.class)))
         .thenReturn(ResponseEntity.ok(firstPageResponse));
     when(restTemplate.getForEntity(eq(secondPageUrl), eq(ResultsByYearResponse.class)))

@@ -3,11 +3,10 @@ package com.f1.seasonchampions.service.query.seasonchampion;
 import com.f1.seasonchampions.dto.SeasonChampionListItem;
 import com.f1.seasonchampions.repository.SeasonChampionRepository;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
