@@ -10,4 +10,5 @@ public class RaceWinnerListItemImpl implements RaceWinnerListItem {
   private boolean champion;
   private  DriverInfo driver;
   private  String seasonDriverId;
+  private String round;
 }

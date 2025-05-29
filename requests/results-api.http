@@ -6,3 +6,6 @@ GET http://localhost:8080/api/season-champions?startYear=2019&endYear=2025
 
 ###
 GET http://localhost:8080/api/seasons
+
+###
+GET http://localhost:8080/api/f1/race-winners/2024

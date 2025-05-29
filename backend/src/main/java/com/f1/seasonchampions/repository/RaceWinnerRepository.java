@@ -19,16 +19,21 @@ public interface RaceWinnerRepository extends JpaRepository<RaceWinner, Long> {
 
   @Query(
     """
-SELECT distinct sc.season as seasonName,
-       CASE WHEN sc.driver.driverId = d.driverId THEN true ELSE false END AS champion,
-       d as driver,
-       sc.driver.driverId AS seasonDriverId
-FROM SeasonChampion sc
-JOIN sc.driver d
-JOIN RaceWinner rw ON rw.driver.driverId = d.driverId
-WHERE sc.season = :season
-ORDER BY sc.season
+    SELECT\s
+        rw.season AS seasonName,
+        rw.round AS round,
+        CASE WHEN sc.driver IS NOT NULL THEN true ELSE false END AS champion,
+        d AS driver,
+        sc.driver.driverId AS seasonDriverId
+    FROM RaceWinner rw
+    JOIN rw.driver d
+    LEFT JOIN SeasonChampion sc\s
+        ON sc.season = rw.season AND sc.driver.driverId = rw.driver.driverId
+    WHERE rw.season = :season
+    ORDER BY CAST(rw.round AS integer)
 """)
   List<RaceWinnerListItem> findBySeasonAndOptionalRound2(
     @Param("season") String season);
+
+  List<RaceWinner> getRaceWinnerBySeason(String season);
 }

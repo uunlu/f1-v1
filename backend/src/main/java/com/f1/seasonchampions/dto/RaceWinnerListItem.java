@@ -9,6 +9,7 @@ public interface RaceWinnerListItem {
   boolean isChampion();
   DriverInfo getDriver();
   String getSeasonDriverId();
+  String getRound();
 }
 
 
