@@ -1,7 +1,6 @@
 package com.f1.seasonchampions.service.query.racewinner;
 
 import com.f1.seasonchampions.dto.RaceWinnerListItem;
-import com.f1.seasonchampions.dto.RaceWinnerListItemImpl;
 import com.f1.seasonchampions.repository.ConstructorRepository;
 import com.f1.seasonchampions.repository.DriverRepository;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
@@ -21,7 +20,7 @@ public class RaceWinnerQueryService {
   private final ConstructorRepository constructorRepository;
 
   @NotNull
-  public List<RaceWinnerListItem> getWinnersBySeason(int year) {
+  public List<RaceWinnerListItem> getWinnersBySeason(final int year) {
     return this.raceWinnerRepository.findBySeasonAndOptionalRound2(String.valueOf(year));
   }
 }

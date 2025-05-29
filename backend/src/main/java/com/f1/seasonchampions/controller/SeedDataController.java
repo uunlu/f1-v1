@@ -44,7 +44,7 @@ public class SeedDataController {
       })
   public ResponseEntity<List<SeasonChampion>> getAllSeasons() {
     log.info("Received request for all F1 seasons");
-    List<SeasonChampion> seasons = seasonChampionSeedService.getAllSeasonChampions();
+    final List<SeasonChampion> seasons = this.seasonChampionSeedService.getAllSeasonChampions();
     log.info("Returning {} seasons", seasons.size());
     return ResponseEntity.ok(seasons);
   }

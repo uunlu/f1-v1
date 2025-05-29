@@ -1,6 +1,7 @@
 package com.f1.seasonchampions.controller;
 
 import com.f1.seasonchampions.dto.RaceWinnerListItem;
+import com.f1.seasonchampions.dto.SeasonChampionListItem;
 import com.f1.seasonchampions.service.query.racewinner.RaceWinnerQueryService;
 import com.f1.seasonchampions.service.query.seasonchampion.SeasonChampionQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,10 +41,10 @@ public class FormulaOneController {
       @ApiResponse(responseCode = "500", description = "Internal server error")
     })
   public ResponseEntity<List<RaceWinnerListItem>> getRaceWinnersBySeason(
-    @Parameter(description = "Year of the F1 season (e.g., 2022)") @PathVariable int season) {
+    @Parameter(description = "Year of the F1 season (e.g., 2022)") @PathVariable final int season) {
 
     log.info("Received public request for race winners of season {}", season);
-    final List<RaceWinnerListItem> winners = raceWinnerQueryService.getWinnersBySeason(season);
+    final List<RaceWinnerListItem> winners = this.raceWinnerQueryService.getWinnersBySeason(season);
     log.info("Returning {} race winners for season {}", winners.size(), season);
     return ResponseEntity.ok(winners);
   }
@@ -57,9 +58,9 @@ public class FormulaOneController {
       @ApiResponse(responseCode = "200", description = "Successfully retrieved season list"),
       @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-  public ResponseEntity<List<String>> getAllSeasons() {
+  public ResponseEntity<List<SeasonChampionListItem>> getAllSeasons() {
     log.info("Received public request for all available F1 seasons");
-    final List<String> seasons = seasonChampionQueryService.getAllSeasons();
+    final List<SeasonChampionListItem> seasons = this.seasonChampionQueryService.getAllSeasons();
     log.info("Returning {} seasons", seasons.size());
     return ResponseEntity.ok(seasons);
   }

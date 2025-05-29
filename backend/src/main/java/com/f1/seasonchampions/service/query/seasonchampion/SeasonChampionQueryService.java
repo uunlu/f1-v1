@@ -1,14 +1,11 @@
 package com.f1.seasonchampions.service.query.seasonchampion;
 
-import com.f1.seasonchampions.dto.RaceWinnerListItem;
-import com.f1.seasonchampions.repository.ConstructorRepository;
-import com.f1.seasonchampions.repository.DriverRepository;
-import com.f1.seasonchampions.repository.RaceWinnerRepository;
+import com.f1.seasonchampions.dto.SeasonChampionListItem;
+import com.f1.seasonchampions.repository.SeasonChampionRepository;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,9 +13,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class SeasonChampionQueryService {
-  @NotNull
+  private final SeasonChampionRepository seasonChampionRepository;
 
-  public List<String> getAllSeasons() {
-    return List.of();
+  @NotNull
+  public List<SeasonChampionListItem> getAllSeasons() {
+    return this.seasonChampionRepository.findAllSeasonChampionListItems();
   }
 }
