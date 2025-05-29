@@ -1,17 +1,28 @@
 package com.f1.seasonchampions.service.query.racewinner;
 
 import com.f1.seasonchampions.dto.RaceWinnerListItem;
+import com.f1.seasonchampions.repository.ConstructorRepository;
+import com.f1.seasonchampions.repository.DriverRepository;
+import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RaceWinnerQueryService {
+  private final RaceWinnerRepository raceWinnerRepository;
+  private final DriverRepository driverRepository;
+  private final ConstructorRepository constructorRepository;
   @NotNull
   public List<RaceWinnerListItem> getWinnersBySeason(int year) {
+//    final List<RaceWinnerListItem> = this.raceWinnerRepository.findBySeasonAndOptionalRound2();
+
+
     return List.of();
   }
 }

@@ -18,7 +18,7 @@ public class LocalWithRemoteFallbackRaceWinnerSeedService implements RaceWinnerS
 
   @Override
   @Transactional
-  public List<RaceWinner> getRaceWinners(final int year) {
+  public List<RaceWinner>   getRaceWinners(final int year) {
     if (this.localService.hasCompleteDataForYear(year)) {
       log.info("Returning race winners from local database for year: {}", year);
       return this.localService.getRaceWinners(year);

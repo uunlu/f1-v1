@@ -9,11 +9,11 @@ import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ import org.springframework.web.client.RestTemplate;
 public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
   private static final int MAX_PAGES = 50;
   private static final int MAX_TOTAL = 1000;
-  private static final int DEFAULT_LIMIT = 1;
+  private static final int DEFAULT_LIMIT = 30;
   private static final int RETRY_BACKOFF_DELAY_MS = 1000;
   private static final int TIMEOUT_IN_SECOND = 5;
 
@@ -43,12 +43,11 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
 
   @PostConstruct
   public void init() {
-    final RateLimiterConfig config =
-        RateLimiterConfig.custom()
-            .limitRefreshPeriod(Duration.ofSeconds(1))
-            .limitForPeriod(1)
-            .timeoutDuration(Duration.ofSeconds(TIMEOUT_IN_SECOND))
-            .build();
+    final RateLimiterConfig config = RateLimiterConfig.custom()
+      .limitRefreshPeriod(Duration.ofSeconds(1))
+      .limitForPeriod(1)
+      .timeoutDuration(Duration.ofSeconds(TIMEOUT_IN_SECOND))
+      .build();
 
     final RateLimiterRegistry registry = RateLimiterRegistry.of(config);
     this.rateLimiter = registry.rateLimiter("raceWinnerApiRateLimiter");
@@ -59,7 +58,7 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
     log.info("Fetching race winners from remote API for year: {}", year);
 
     final Supplier<List<RaceWinner>> rateLimitedCall =
-        RateLimiter.decorateSupplier(this.rateLimiter, () -> this.fetchRaceWinnersForYear(year));
+      RateLimiter.decorateSupplier(this.rateLimiter, () -> this.fetchRaceWinnersForYear(year));
 
     try {
       return rateLimitedCall.get();
@@ -80,9 +79,9 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
   }
 
   @Retryable(
-      value = RestClientException.class,
-      maxAttempts = 3,
-      backoff = @Backoff(delay = RETRY_BACKOFF_DELAY_MS, multiplier = 2))
+    value = RestClientException.class,
+    maxAttempts = 3,
+    backoff = @Backoff(delay = RETRY_BACKOFF_DELAY_MS, multiplier = 2))
   private List<RaceWinner> fetchRaceWinnersForYear(final int year) {
     int offset = 0;
     final int limit = DEFAULT_LIMIT;
@@ -91,9 +90,12 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
     int pageCount = 0;
 
     while (offset < total && pageCount < MAX_PAGES) {
-      final String url =
-          String.format(
-              "%s/%d/results.json?limit=%d&offset=%d", this.apiBaseUrl, year, limit, offset);
+      final String url = String.format(
+        "%s/%d/results.json?limit=%d&offset=%d",
+        this.apiBaseUrl,
+        year,
+        limit,
+        offset);
       log.debug("Fetching race results from URL: {}", url);
 
       final ResponseEntity<ResultsByYearResponse> response;
@@ -106,8 +108,8 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
 
       final ResultsByYearResponse result = response.getBody();
       if (result == null
-          || result.getMrData() == null
-          || result.getMrData().getRaceTable() == null) {
+        || result.getMrData() == null
+        || result.getMrData().getRaceTable() == null) {
         log.warn("Invalid or empty response at offset {}", offset);
         break;
       }
@@ -121,53 +123,86 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
         }
       }
 
-      final List<RaceWinner> winners =
-          result.getMrData().getRaceTable().getRaces().stream()
-              .map(this::mapToRaceWinner)
-              .filter(Objects::nonNull)
-              .toList();
+      final List<RaceWinner> winners = result.getMrData()
+        .getRaceTable()
+        .getRaces()
+        .stream()
+        .map(this::mapToRaceWinner)
+        .flatMap(List::stream)
+        .toList();
 
       allWinners.addAll(winners);
-      offset += 1;
+      offset += limit;
       pageCount++;
     }
 
     return allWinners;
   }
 
-  private RaceWinner mapToRaceWinner(final Race race) {
-    final var results = race.getResults();
-    if (results == null || results.isEmpty()) {
-      log.warn("No results found for race {}", race.getRound());
-      return null;
+  @NotNull
+  private List<RaceWinner> mapToRaceWinner(final Race race) {
+    if (race == null) {
+      log.warn("Race object is null");
+      return Collections.emptyList();
     }
 
-    final var winnerResult = results.get(0); // Assuming first result is the winner
+    final var results = race.getResults();
+    if (results == null || results.isEmpty()) {
+      log.warn("No results found for race round {}", race.getRound());
+      return Collections.emptyList();
+    }
+
+    final var winnerResult = results.stream()
+      .filter(result -> result != null && "1".equals(result.getPosition()))
+      .findFirst();
+
+    if (winnerResult.isEmpty()) {
+      log.warn("No winner found in race round {} for season {}", race.getRound(), race.getSeason());
+      return Collections.emptyList();
+    }
+
+    final var winner = winnerResult.get();
+    final var constructor = winner.getConstructor();
+    final var driver = winner.getDriver();
+
+    if (driver == null || constructor == null) {
+      log.warn(
+        "Skipping incomplete winner data - Round: {}, Season: {}, Has Driver: {}, Has Constructor: {}",
+        race.getRound(),
+        race.getSeason(),
+        driver != null,
+        constructor != null);
+      return Collections.emptyList();
+    }
+
     final RaceWinner raceWinner = new RaceWinner();
     raceWinner.setRound(race.getRound());
     raceWinner.setSeason(race.getSeason());
     raceWinner.setTime(race.getTime());
+    raceWinner.setConstructor(
+      new Constructor(
+        constructor.getConstructorId(),
+        constructor.getName(),
+        constructor.getNationality(),
+        race.getSeason()));
+    raceWinner.setDriver(
+      new Driver(
+        driver.getDriverId(),
+        driver.getPermanentNumber(),
+        driver.getCode(),
+        driver.getGivenName(),
+        driver.getFamilyName(),
+        driver.getDateOfBirth(),
+        driver.getNationality()));
 
-    final var constructor = winnerResult.getConstructor();
-    if (constructor != null) {
-      raceWinner.setConstructor(
-          new Constructor(
-              constructor.getConstructorId(), constructor.getName(), constructor.getNationality()));
-    }
+    log.info(
+      "Winner mapped successfully - Round: {}, Season: {}, Driver: {} {}, Constructor: {}",
+      raceWinner.getRound(),
+      raceWinner.getSeason(),
+      driver.getGivenName(),
+      driver.getFamilyName(),
+      constructor.getName());
 
-    final var driver = winnerResult.getDriver();
-    if (driver != null) {
-      raceWinner.setDriver(
-          new Driver(
-              driver.getDriverId(),
-              driver.getPermanentNumber(),
-              driver.getCode(),
-              driver.getGivenName(),
-              driver.getFamilyName(),
-              driver.getDateOfBirth(),
-              driver.getNationality()));
-    }
-
-    return raceWinner;
+    return Collections.singletonList(raceWinner);
   }
 }

@@ -1,5 +1,5 @@
 ### GET request to example server
-GET http://localhost:8080/api/results?year=2020
+GET http://localhost:8080/api/results?year=2024
 
 ###
 GET http://localhost:8080/api/season-champions?startYear=2019&endYear=2025
