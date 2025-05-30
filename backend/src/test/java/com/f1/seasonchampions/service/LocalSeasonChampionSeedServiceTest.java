@@ -7,11 +7,14 @@ import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
+import com.f1.seasonchampions.repository.ConstructorRepository;
+import com.f1.seasonchampions.repository.DriverRepository;
 import com.f1.seasonchampions.repository.SeasonChampionRepository;
 import com.f1.seasonchampions.service.seed.seasonchampion.LocalSeasonChampionSeedService;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +25,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LocalSeasonChampionSeedServiceTest {
   @Mock private SeasonChampionRepository seasonChampionRepository;
+  @Mock private ConstructorRepository constructorRepository;
+  @Mock private DriverRepository driverRepository;
 
   @InjectMocks private LocalSeasonChampionSeedService service;
 
@@ -93,12 +98,19 @@ class LocalSeasonChampionSeedServiceTest {
 
   @Test
   void whenSavingChampion_thenSaveToRepository() {
+    when(constructorRepository.findByConstructorId("red_bull")).thenReturn(Optional.empty());
+    when(driverRepository.findById("max_verstappen")).thenReturn(Optional.empty());
+    when(constructorRepository.save(any(Constructor.class)))
+        .thenReturn(champion2021.getConstructor());
+    when(driverRepository.save(any(Driver.class))).thenReturn(champion2021.getDriver());
     when(seasonChampionRepository.save(champion2021)).thenReturn(champion2021);
 
     SeasonChampion result = service.saveChampion(champion2021);
 
     assertEquals(champion2021, result);
     verify(seasonChampionRepository).save(champion2021);
+    verify(constructorRepository).save(any(Constructor.class));
+    verify(driverRepository).save(any(Driver.class));
   }
 
   @Test

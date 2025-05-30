@@ -46,26 +46,28 @@ public class LocalSeasonChampionSeedService implements SeasonChampionSeedService
   @Transactional
   public SeasonChampion saveChampion(final SeasonChampion champion) {
     log.debug("Saving champion to database: {}", champion);
-    
+
     // Look up existing constructor before saving
     if (champion.getConstructor() != null) {
-      final Optional<Constructor> existingConstructor = 
-          this.constructorRepository.findByConstructorId(champion.getConstructor().getConstructorId());
-      
+      final Optional<Constructor> existingConstructor =
+          this.constructorRepository.findByConstructorId(
+              champion.getConstructor().getConstructorId());
+
       if (existingConstructor.isPresent()) {
         champion.setConstructor(existingConstructor.get());
       } else {
         // Save the new constructor first
-        final Constructor savedConstructor = this.constructorRepository.save(champion.getConstructor());
+        final Constructor savedConstructor =
+            this.constructorRepository.save(champion.getConstructor());
         champion.setConstructor(savedConstructor);
       }
     }
-    
+
     // Look up existing driver before saving
     if (champion.getDriver() != null) {
-      final Optional<Driver> existingDriver = 
+      final Optional<Driver> existingDriver =
           this.driverRepository.findById(champion.getDriver().getDriverId());
-      
+
       if (existingDriver.isPresent()) {
         champion.setDriver(existingDriver.get());
       } else {
@@ -74,7 +76,7 @@ public class LocalSeasonChampionSeedService implements SeasonChampionSeedService
         champion.setDriver(savedDriver);
       }
     }
-    
+
     return this.seasonChampionRepository.save(champion);
   }
 

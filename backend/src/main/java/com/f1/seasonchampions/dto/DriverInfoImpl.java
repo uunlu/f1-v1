@@ -1,10 +1,10 @@
 package com.f1.seasonchampions.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
+@AllArgsConstructor
 public class DriverInfoImpl implements DriverInfo {
   private String givenName;
   private String familyName;

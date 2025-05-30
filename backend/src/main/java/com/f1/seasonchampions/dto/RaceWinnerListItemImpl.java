@@ -1,10 +1,10 @@
 package com.f1.seasonchampions.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
+@AllArgsConstructor
 public class RaceWinnerListItemImpl implements RaceWinnerListItem {
   private String seasonName;
   private String round;

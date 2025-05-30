@@ -32,11 +32,10 @@ public interface RaceWinnerRepository extends JpaRepository<RaceWinner, Long> {
       LEFT JOIN SeasonChampion sc ON sc.season = rw.season AND sc.driver.driverId = rw.driver.driverId
       WHERE rw.season = :season
       ORDER BY CAST(rw.round AS integer)
-      """
-  )
+      """)
   List<RaceWinnerListItem> findRaceWinnersWithConstructors(@Param("season") String season);
 
   default List<RaceWinner> getRaceWinnerBySeason(String season) {
-    return findBySeasonAndOptionalRound(season, null);
+    return this.findBySeasonAndOptionalRound(season, null);
   }
 }
