@@ -2,8 +2,11 @@ package com.f1.seasonchampions.service.scheduler;
 
 import com.f1.seasonchampions.dto.RaceSyncResult;
 import com.f1.seasonchampions.model.RaceWinner;
+import com.f1.seasonchampions.model.SeasonChampion;
+import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import com.f1.seasonchampions.service.seed.racewinner.RaceWinnerSeedService;
+import com.f1.seasonchampions.service.seed.seasonchampion.SeasonChampionSeedService;
 import jakarta.transaction.Transactional;
 import java.time.Year;
 import java.util.ArrayList;
@@ -19,12 +22,15 @@ import org.springframework.stereotype.Service;
 public class F1DataSchedulerService {
   private final RaceWinnerSeedService raceWinnerService;
   private final RaceWinnerRepository raceResultRepository;
+  private final SeasonChampionSeedService seasonChampionSeedService;
 
   public F1DataSchedulerService(
       final RaceWinnerSeedService raceWinnerService,
-      final RaceWinnerRepository raceResultRepository) {
+      final RaceWinnerRepository raceResultRepository,
+      final SeasonChampionSeedService seasonChampionSeedService) {
     this.raceWinnerService = raceWinnerService;
     this.raceResultRepository = raceResultRepository;
+    this.seasonChampionSeedService = seasonChampionSeedService;
   }
 
   @Scheduled(cron = "${f1.data.sync.cron:0 0 12 * * ?}")
@@ -42,8 +48,6 @@ public class F1DataSchedulerService {
           "Last processed round for year {}: {}",
           currentYear,
           lastProcessedRound.isPresent() ? lastProcessedRound.get() : "none");
-
-      log.info("Last processed race round: {}", lastProcessedRound);
 
       final var currentYearWinners = this.raceWinnerService.getRaceWinners(currentYear);
       if (currentYearWinners.isEmpty()) {
@@ -84,5 +88,47 @@ public class F1DataSchedulerService {
     return this.raceResultRepository.getRaceWinnerBySeason(String.valueOf(year)).stream()
         .map(raceWinner -> Integer.parseInt(raceWinner.getRound()))
         .max(Comparator.naturalOrder());
+  }
+
+  // --- NEW scheduled method for syncing season champions ---
+  @Scheduled(cron = "${f1.seasonchampions.sync.cron:0 30 12 * * ?}")
+  @Transactional
+  public RaceSyncResult syncSeasonChampions() {
+    log.info("Starting F1DataSchedulerService syncSeasonChampions");
+
+    final List<String> updated = new ArrayList<>();
+    try {
+      final int startYear = 2005; // you can externalize this if you want
+      final int endYear = Year.now().getValue();
+
+      final List<SeasonChampion> champions =
+          this.seasonChampionSeedService.getSeasonChampions(
+              new SeasonRangeRequest(startYear, endYear));
+
+      if (champions.isEmpty()) {
+        log.info("No season champions found");
+        return new RaceSyncResult(0, List.of(), true, "No season champions found");
+      }
+
+      int newChampionsSaved = 0;
+      for (SeasonChampion champion : champions) {
+        final SeasonChampion saved = this.seasonChampionSeedService.saveChampion(champion);
+        newChampionsSaved++;
+        updated.add("SeasonChampion for season " + saved.getSeason());
+        log.info("Saved/updated season champion for season {}", saved.getSeason());
+      }
+
+      if (newChampionsSaved > 0) {
+        log.info("Successfully synced {} season champions", newChampionsSaved);
+        return new RaceSyncResult(newChampionsSaved, updated, true, "Sync completed successfully");
+      } else {
+        log.info("No new season champions to sync");
+        return new RaceSyncResult(0, List.of(), true, "No new season champions to sync");
+      }
+
+    } catch (Exception e) {
+      log.error("F1DataSchedulerService error sync season champions: {}", e.getMessage(), e);
+      return new RaceSyncResult(0, List.of(), false, "Sync failed: " + e.getMessage());
+    }
   }
 }

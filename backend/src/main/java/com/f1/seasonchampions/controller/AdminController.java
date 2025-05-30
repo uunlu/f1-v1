@@ -49,4 +49,29 @@ public class AdminController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
     }
   }
+
+  @PostMapping("/sync-season-champions")
+  @Operation(
+      summary = "Trigger synchronization of F1 season champions",
+      description =
+          "Manually triggers the background job to sync season champion data from the external API")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Sync process completed"),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal error while syncing season champions")
+      })
+  public ResponseEntity<RaceSyncResult> triggerSeasonChampionsSync() {
+    log.info("Admin triggered manual sync for F1 season champions");
+
+    final RaceSyncResult result = this.schedulerService.syncSeasonChampions();
+    log.info("Season champions sync completed with {} updates", result.updatedCount());
+
+    if (result.success()) {
+      return ResponseEntity.ok(result);
+    } else {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+    }
+  }
 }
