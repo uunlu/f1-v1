@@ -33,7 +33,7 @@ public class RaceWinner {
   private Driver driver;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "constructor_id", referencedColumnName = "id")
+  @JoinColumn(name = "constructor_id", referencedColumnName = "constructor_id")
   private Constructor constructor;
 
   private String time;

@@ -1,6 +1,5 @@
 package com.f1.seasonchampions.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -21,11 +20,11 @@ public class SeasonChampion {
 
   @Id private String season;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "driver_id")
   private Driver driver;
 
-  @ManyToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "constructor_id")
+  @ManyToOne
+  @JoinColumn(name = "constructor_id", referencedColumnName = "constructor_id")
   private Constructor constructor;
 }

@@ -180,8 +180,7 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
         new Constructor(
             constructor.getConstructorId(),
             constructor.getName(),
-            constructor.getNationality(),
-            race.getSeason()));
+            constructor.getNationality()));
     raceWinner.setDriver(
         new Driver(
             driver.getDriverId(),
