@@ -8,7 +8,6 @@ import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import java.time.LocalDate;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestClient;
@@ -22,7 +21,8 @@ public class F1DataService {
   @Value("https://api.jolpi.ca/ergast/f1")
   private String baseUrl;
 
-  public F1DataService(final RestClient restClient, final RaceWinnerRepository raceWinnerRepository) {
+  public F1DataService(
+      final RestClient restClient, final RaceWinnerRepository raceWinnerRepository) {
     this.restClient = restClient;
     this.raceWinnerRepository = raceWinnerRepository;
   }

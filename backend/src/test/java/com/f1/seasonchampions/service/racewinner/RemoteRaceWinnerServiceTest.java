@@ -1,17 +1,12 @@
 package com.f1.seasonchampions.service.racewinner;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.contains;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.dto.Race;
-import com.f1.seasonchampions.dto.ResultsByYearResponse;
-import com.f1.seasonchampions.dto.ResultsByYearResponseMRData;
-import com.f1.seasonchampions.dto.ResultsByYearResponseMRDataRaceTable;
 import com.f1.seasonchampions.model.RaceWinner;
-import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
-import java.util.Collections;
+import com.f1.seasonchampions.repository.RaceWinnerRepository;
+import com.f1.seasonchampions.service.scheduler.F1DataSchedulerService;
+import com.f1.seasonchampions.service.seed.racewinner.RaceWinnerSeedService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,162 +14,87 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
-class RemoteRaceWinnerServiceTest {
-  @Mock private RestTemplate restTemplate;
+class F1DataSchedulerServiceTest {
 
-  @InjectMocks private RemoteRaceWinnerSeedService service;
+  @Mock private RaceWinnerSeedService raceWinnerSeedService;
 
-  private ResultsByYearResponse mockResponse;
-  private Race mockRace;
-  private com.f1.seasonchampions.dto.Result mockResult;
-  private com.f1.seasonchampions.dto.Driver mockDriver;
-  private com.f1.seasonchampions.dto.Constructor mockConstructor;
+  @Mock private RaceWinnerRepository raceWinnerRepository;
+
+  @InjectMocks private F1DataSchedulerService f1DataSchedulerService;
+
+  private RaceWinner mockWinner(int round) {
+    RaceWinner winner = new RaceWinner();
+    winner.setSeason("2025");
+    winner.setRound(String.valueOf(round));
+    return winner;
+  }
 
   @BeforeEach
   void setUp() {
-    service.init(); // Initialize rate limiter
-    ReflectionTestUtils.setField(service, "apiBaseUrl", "https://api.test.com/ergast/f1");
-
-    mockDriver = new com.f1.seasonchampions.dto.Driver();
-    mockDriver.setDriverId("max_verstappen");
-    mockDriver.setGivenName("Max");
-    mockDriver.setFamilyName("Verstappen");
-    mockDriver.setNationality("Dutch");
-    mockDriver.setCode("VER");
-
-    mockConstructor = new com.f1.seasonchampions.dto.Constructor();
-    mockConstructor.setConstructorId("red_bull");
-    mockConstructor.setName("Red Bull Racing");
-    mockConstructor.setNationality("Austrian");
-
-    mockResult = new com.f1.seasonchampions.dto.Result();
-    mockResult.setDriver(mockDriver);
-    mockResult.setConstructor(mockConstructor);
-    mockResult.setPosition("1");
-
-    mockRace = new Race();
-    mockRace.setSeason("2023");
-    mockRace.setRound("1");
-    mockRace.setResults(Collections.singletonList(mockResult));
-
-    ResultsByYearResponseMRDataRaceTable raceTable = new ResultsByYearResponseMRDataRaceTable();
-    raceTable.setRaces(Collections.singletonList(mockRace));
-
-    ResultsByYearResponseMRData mrData = new ResultsByYearResponseMRData();
-    mrData.setTotal("1");
-    mrData.setRaceTable(raceTable);
-
-    mockResponse = new ResultsByYearResponse();
-    mockResponse.setMrData(mrData);
+    // No-op for now
   }
 
   @Test
-  void whenGettingRaceWinners_thenReturnMappedResults() {
-    when(restTemplate.getForEntity(contains("/2023/results.json"), eq(ResultsByYearResponse.class)))
-        .thenReturn(ResponseEntity.ok(mockResponse));
+  void whenNewRaceWinnerAvailable_thenItIsSaved() {
+    // Arrange
+    int currentYear = 2025;
+    when(raceWinnerRepository.getRaceWinnerBySeason(String.valueOf(currentYear)))
+        .thenReturn(List.of(mockWinner(1), mockWinner(2)));
 
-    List<RaceWinner> result = service.getRaceWinners(2023);
+    List<RaceWinner> apiResults = List.of(mockWinner(1), mockWinner(2), mockWinner(3));
+    when(raceWinnerSeedService.getRaceWinners(currentYear)).thenReturn(apiResults);
 
-    assertEquals(1, result.size());
-    RaceWinner winner = result.get(0);
-    assertEquals("2023", winner.getSeason());
-    assertEquals("1", winner.getRound());
-    assertEquals("max_verstappen", winner.getDriver().getDriverId());
-    assertEquals("red_bull", winner.getConstructor().getConstructorId());
+    // Act
+    f1DataSchedulerService.syncLatestF1RaceResult();
+
+    // Assert
+    verify(raceWinnerRepository, times(1)).save(argThat(w -> w.getRound().equals("3")));
   }
 
   @Test
-  void whenApiCallFails_thenReturnEmptyList() {
-    when(restTemplate.getForEntity(contains("/2023/results.json"), eq(ResultsByYearResponse.class)))
-        .thenThrow(new RestClientException("API Error"));
+  void whenNoNewData_thenNothingIsSaved() {
+    int currentYear = 2025;
+    when(raceWinnerRepository.getRaceWinnerBySeason(String.valueOf(currentYear)))
+        .thenReturn(List.of(mockWinner(1), mockWinner(2), mockWinner(3)));
 
-    List<RaceWinner> result = service.getRaceWinners(2023);
+    List<RaceWinner> apiResults = List.of(mockWinner(1), mockWinner(2), mockWinner(3));
+    when(raceWinnerSeedService.getRaceWinners(currentYear)).thenReturn(apiResults);
 
-    assertTrue(result.isEmpty());
+    f1DataSchedulerService.syncLatestF1RaceResult();
+
+    verify(raceWinnerRepository, never()).save(any());
   }
 
   @Test
-  void whenResponseIsNull_thenReturnEmptyList() {
-    when(restTemplate.getForEntity(contains("/2023/results.json"), eq(ResultsByYearResponse.class)))
-        .thenReturn(ResponseEntity.ok(null));
+  void whenApiReturnsNoResults_thenExitEarly() {
+    when(raceWinnerSeedService.getRaceWinners(anyInt())).thenReturn(List.of());
 
-    List<RaceWinner> result = service.getRaceWinners(2023);
+    f1DataSchedulerService.syncLatestF1RaceResult();
 
-    assertTrue(result.isEmpty());
+    verify(raceWinnerRepository, never()).save(any());
   }
 
   @Test
-  void whenResponseHasMultiplePages_thenFetchAll() {
-    // First page response
-    ResultsByYearResponseMRData firstPageData = new ResultsByYearResponseMRData();
-    firstPageData.setTotal("60"); // Set total to require multiple pages
-    ResultsByYearResponseMRDataRaceTable firstPageTable =
-        new ResultsByYearResponseMRDataRaceTable();
-    Race firstRace = mockRace; // This already has position="1" from setUp
-    firstPageTable.setRaces(Collections.singletonList(firstRace));
-    firstPageData.setRaceTable(firstPageTable);
-    ResultsByYearResponse firstPageResponse = new ResultsByYearResponse();
-    firstPageResponse.setMrData(firstPageData);
+  void whenRepositoryReturnsEmpty_thenAllResultsAreSaved() {
+    int currentYear = 2025;
+    when(raceWinnerRepository.getRaceWinnerBySeason(String.valueOf(currentYear)))
+        .thenReturn(List.of());
 
-    // Second page response
-    ResultsByYearResponseMRData secondPageData = new ResultsByYearResponseMRData();
-    secondPageData.setTotal("60"); // Same total as first page
-    ResultsByYearResponseMRDataRaceTable secondPageTable =
-        new ResultsByYearResponseMRDataRaceTable();
-    Race secondRace = new Race();
-    secondRace.setSeason("2023");
-    secondRace.setRound("2");
-    com.f1.seasonchampions.dto.Result secondResult = new com.f1.seasonchampions.dto.Result();
-    secondResult.setDriver(mockDriver);
-    secondResult.setConstructor(mockConstructor);
-    secondResult.setPosition("1"); // Set position to 1 for the second race winner
-    secondRace.setResults(Collections.singletonList(secondResult));
-    secondPageTable.setRaces(Collections.singletonList(secondRace));
-    secondPageData.setRaceTable(secondPageTable);
-    ResultsByYearResponse secondPageResponse = new ResultsByYearResponse();
-    secondPageResponse.setMrData(secondPageData);
+    List<RaceWinner> winners = List.of(mockWinner(1), mockWinner(2));
+    when(raceWinnerSeedService.getRaceWinners(currentYear)).thenReturn(winners);
 
-    // Mock responses for specific URLs
-    String firstPageUrl = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=0";
-    String secondPageUrl = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=30";
+    f1DataSchedulerService.syncLatestF1RaceResult();
 
-    when(restTemplate.getForEntity(eq(firstPageUrl), eq(ResultsByYearResponse.class)))
-        .thenReturn(ResponseEntity.ok(firstPageResponse));
-    when(restTemplate.getForEntity(eq(secondPageUrl), eq(ResultsByYearResponse.class)))
-        .thenReturn(ResponseEntity.ok(secondPageResponse));
-
-    List<RaceWinner> result = service.getRaceWinners(2023);
-
-    assertEquals(2, result.size());
-    assertEquals("1", result.get(0).getRound());
-    assertEquals("2", result.get(1).getRound());
-
-    // Verify both pages were requested
-    verify(restTemplate).getForEntity(eq(firstPageUrl), eq(ResultsByYearResponse.class));
-    verify(restTemplate).getForEntity(eq(secondPageUrl), eq(ResultsByYearResponse.class));
+    verify(raceWinnerRepository, times(2)).save(any());
   }
 
   @Test
-  void whenSavingRaceWinner_thenReturnAsIs() {
-    RaceWinner winner = new RaceWinner();
-    winner.setSeason("2023");
-    winner.setRound("1");
+  void whenExceptionThrown_thenItIsHandledGracefully() {
+    when(raceWinnerSeedService.getRaceWinners(anyInt()))
+        .thenThrow(new RuntimeException("Simulated API error"));
 
-    RaceWinner result = service.saveRaceWinner(winner);
-
-    assertEquals(winner, result);
-    verifyNoInteractions(restTemplate);
-  }
-
-  @Test
-  void whenCheckingCompleteData_thenReturnFalse() {
-    assertFalse(service.hasCompleteDataForYear(2023));
-    verifyNoInteractions(restTemplate);
+    assertDoesNotThrow(() -> f1DataSchedulerService.syncLatestF1RaceResult());
   }
 }

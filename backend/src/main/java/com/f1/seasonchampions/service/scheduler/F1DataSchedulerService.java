@@ -7,7 +7,6 @@ import jakarta.transaction.Transactional;
 import java.time.Year;
 import java.util.Comparator;
 import java.util.Optional;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,8 @@ public class F1DataSchedulerService {
   private final RaceWinnerRepository raceResultRepository;
 
   public F1DataSchedulerService(
-      final RaceWinnerSeedService raceWinnerService, final RaceWinnerRepository raceResultRepository) {
+      final RaceWinnerSeedService raceWinnerService,
+      final RaceWinnerRepository raceResultRepository) {
     this.raceWinnerService = raceWinnerService;
     this.raceResultRepository = raceResultRepository;
   }
