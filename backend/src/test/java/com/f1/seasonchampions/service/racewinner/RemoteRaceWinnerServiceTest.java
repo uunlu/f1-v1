@@ -10,6 +10,7 @@ import com.f1.seasonchampions.dto.ResultsByYearResponse;
 import com.f1.seasonchampions.dto.ResultsByYearResponseMRData;
 import com.f1.seasonchampions.dto.ResultsByYearResponseMRDataRaceTable;
 import com.f1.seasonchampions.model.RaceWinner;
+import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,7 @@ import org.springframework.web.client.RestTemplate;
 class RemoteRaceWinnerServiceTest {
   @Mock private RestTemplate restTemplate;
 
-  @InjectMocks private RemoteRaceWinnerService service;
+  @InjectMocks private RemoteRaceWinnerSeedService service;
 
   private ResultsByYearResponse mockResponse;
   private Race mockRace;
@@ -55,6 +56,7 @@ class RemoteRaceWinnerServiceTest {
     mockResult = new com.f1.seasonchampions.dto.Result();
     mockResult.setDriver(mockDriver);
     mockResult.setConstructor(mockConstructor);
+    mockResult.setPosition("1");
 
     mockRace = new Race();
     mockRace.setSeason("2023");
@@ -111,10 +113,10 @@ class RemoteRaceWinnerServiceTest {
   void whenResponseHasMultiplePages_thenFetchAll() {
     // First page response
     ResultsByYearResponseMRData firstPageData = new ResultsByYearResponseMRData();
-    firstPageData.setTotal("2");
+    firstPageData.setTotal("60"); // Set total to require multiple pages
     ResultsByYearResponseMRDataRaceTable firstPageTable =
         new ResultsByYearResponseMRDataRaceTable();
-    Race firstRace = mockRace;
+    Race firstRace = mockRace; // This already has position="1" from setUp
     firstPageTable.setRaces(Collections.singletonList(firstRace));
     firstPageData.setRaceTable(firstPageTable);
     ResultsByYearResponse firstPageResponse = new ResultsByYearResponse();
@@ -122,21 +124,29 @@ class RemoteRaceWinnerServiceTest {
 
     // Second page response
     ResultsByYearResponseMRData secondPageData = new ResultsByYearResponseMRData();
-    secondPageData.setTotal("2");
+    secondPageData.setTotal("60"); // Same total as first page
     ResultsByYearResponseMRDataRaceTable secondPageTable =
         new ResultsByYearResponseMRDataRaceTable();
     Race secondRace = new Race();
     secondRace.setSeason("2023");
     secondRace.setRound("2");
-    secondRace.setResults(Collections.singletonList(mockResult));
+    com.f1.seasonchampions.dto.Result secondResult = new com.f1.seasonchampions.dto.Result();
+    secondResult.setDriver(mockDriver);
+    secondResult.setConstructor(mockConstructor);
+    secondResult.setPosition("1"); // Set position to 1 for the second race winner
+    secondRace.setResults(Collections.singletonList(secondResult));
     secondPageTable.setRaces(Collections.singletonList(secondRace));
     secondPageData.setRaceTable(secondPageTable);
     ResultsByYearResponse secondPageResponse = new ResultsByYearResponse();
     secondPageResponse.setMrData(secondPageData);
 
-    when(restTemplate.getForEntity(contains("offset=0"), eq(ResultsByYearResponse.class)))
+    // Mock responses for specific URLs
+    String firstPageUrl = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=0";
+    String secondPageUrl = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=30";
+
+    when(restTemplate.getForEntity(eq(firstPageUrl), eq(ResultsByYearResponse.class)))
         .thenReturn(ResponseEntity.ok(firstPageResponse));
-    when(restTemplate.getForEntity(contains("offset=1"), eq(ResultsByYearResponse.class)))
+    when(restTemplate.getForEntity(eq(secondPageUrl), eq(ResultsByYearResponse.class)))
         .thenReturn(ResponseEntity.ok(secondPageResponse));
 
     List<RaceWinner> result = service.getRaceWinners(2023);
@@ -144,6 +154,10 @@ class RemoteRaceWinnerServiceTest {
     assertEquals(2, result.size());
     assertEquals("1", result.get(0).getRound());
     assertEquals("2", result.get(1).getRound());
+
+    // Verify both pages were requested
+    verify(restTemplate).getForEntity(eq(firstPageUrl), eq(ResultsByYearResponse.class));
+    verify(restTemplate).getForEntity(eq(secondPageUrl), eq(ResultsByYearResponse.class));
   }
 
   @Test

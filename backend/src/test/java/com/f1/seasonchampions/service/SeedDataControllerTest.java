@@ -3,36 +3,36 @@ package com.f1.seasonchampions.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.controller.SeasonChampionController;
+import com.f1.seasonchampions.controller.SeedDataController;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import com.f1.seasonchampions.service.racewinner.RaceWinnerService;
-import com.f1.seasonchampions.service.seasonchampion.SeasonChampionService;
+import com.f1.seasonchampions.service.seed.racewinner.RaceWinnerSeedService;
+import com.f1.seasonchampions.service.seed.seasonchampion.SeasonChampionSeedService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-class SeasonChampionControllerTest {
+class SeedDataControllerTest {
 
-  private SeasonChampionService seasonChampionService;
-  private RaceWinnerService raceWinnerService;
-  private SeasonChampionController controller;
+  private SeasonChampionSeedService seasonChampionSeedService;
+  private RaceWinnerSeedService raceWinnerSeedService;
+  private SeedDataController controller;
 
   @BeforeEach
   void setUp() {
-    seasonChampionService = mock(SeasonChampionService.class);
-    raceWinnerService = mock(RaceWinnerService.class);
-    controller = new SeasonChampionController(seasonChampionService, raceWinnerService);
+    seasonChampionSeedService = mock(SeasonChampionSeedService.class);
+    raceWinnerSeedService = mock(RaceWinnerSeedService.class);
+    controller = new SeedDataController(seasonChampionSeedService, raceWinnerSeedService);
   }
 
   @Test
   void getSeasonChampions_returnsListFromService() {
     // Arrange
     var mockChampion = new SeasonChampion();
-    when(seasonChampionService.getSeasonChampions(new SeasonRangeRequest(2005, 2024)))
+    when(seasonChampionSeedService.getSeasonChampions(new SeasonRangeRequest(2005, 2024)))
         .thenReturn(List.of(mockChampion));
 
     // Act
@@ -42,14 +42,14 @@ class SeasonChampionControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
     assertEquals(1, response.getBody().size());
-    verify(seasonChampionService).getSeasonChampions(new SeasonRangeRequest(2005, 2024));
+    verify(seasonChampionSeedService).getSeasonChampions(new SeasonRangeRequest(2005, 2024));
   }
 
   @Test
   void getRaceResults_returnsListFromService() {
     // Arrange
     var mockWinner = new RaceWinner();
-    when(raceWinnerService.getRaceWinners(2023)).thenReturn(List.of(mockWinner));
+    when(raceWinnerSeedService.getRaceWinners(2023)).thenReturn(List.of(mockWinner));
 
     // Act
     ResponseEntity<List<RaceWinner>> response = controller.getRaceResults(2023);
@@ -58,6 +58,6 @@ class SeasonChampionControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
     assertEquals(1, response.getBody().size());
-    verify(raceWinnerService).getRaceWinners(2023);
+    verify(raceWinnerSeedService).getRaceWinners(2023);
   }
 }

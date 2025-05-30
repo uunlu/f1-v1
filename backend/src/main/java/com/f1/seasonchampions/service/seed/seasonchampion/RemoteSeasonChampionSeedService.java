@@ -1,4 +1,4 @@
-package com.f1.seasonchampions.service.seasonchampion;
+package com.f1.seasonchampions.service.seed.seasonchampion;
 
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RemoteSeasonChampionService implements SeasonChampionService {
+public class RemoteSeasonChampionSeedService implements SeasonChampionSeedService {
   private static final int TIMEOUT_IN_SECOND = 5;
 
   private final F1ApiClient f1ApiClient;
@@ -68,6 +68,17 @@ public class RemoteSeasonChampionService implements SeasonChampionService {
     }
 
     return champions;
+  }
+
+  @Override
+  public List<SeasonChampion> getAllSeasonChampions() {
+    log.info("Fetching all season champions from remote API");
+
+    // TODO: read from yml file
+    final int startYear = 2005;
+    final int endYear = java.time.Year.now().getValue();
+
+    return this.getSeasonChampions(new SeasonRangeRequest(startYear, endYear));
   }
 
   @Override

@@ -3,8 +3,8 @@ package com.f1.seasonchampions.controller;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import com.f1.seasonchampions.service.racewinner.RaceWinnerService;
-import com.f1.seasonchampions.service.seasonchampion.SeasonChampionService;
+import com.f1.seasonchampions.service.seed.racewinner.RaceWinnerSeedService;
+import com.f1.seasonchampions.service.seed.seasonchampion.SeasonChampionSeedService;
 import com.f1.seasonchampions.validation.CurrentYearConstraint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,10 +28,26 @@ import org.springframework.web.bind.annotation.RestController;
     name = "F1 Season Champions",
     description = "APIs for retrieving F1 season champions and race winners")
 @RequiredArgsConstructor
-public class SeasonChampionController {
+public class SeedDataController {
 
-  private final SeasonChampionService seasonChampionService;
-  private final RaceWinnerService raceWinnerService;
+  private final SeasonChampionSeedService seasonChampionSeedService;
+  private final RaceWinnerSeedService raceWinnerSeedService;
+
+  @GetMapping("/seasons")
+  @Operation(
+      summary = "Get all F1 seasons",
+      description = "Retrieves all available F1 seasons with basic information")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved all seasons"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<List<SeasonChampion>> getAllSeasons() {
+    log.info("Received request for all F1 seasons");
+    final List<SeasonChampion> seasons = this.seasonChampionSeedService.getAllSeasonChampions();
+    log.info("Returning {} seasons", seasons.size());
+    return ResponseEntity.ok(seasons);
+  }
 
   @GetMapping("/season-champions")
   @Operation(
@@ -55,7 +71,8 @@ public class SeasonChampionController {
 
     log.info("Received request for season champions from {} to {}", startYear, endYear);
     final SeasonRangeRequest request = new SeasonRangeRequest(startYear, endYear);
-    final List<SeasonChampion> champions = this.seasonChampionService.getSeasonChampions(request);
+    final List<SeasonChampion> champions =
+        this.seasonChampionSeedService.getSeasonChampions(request);
     log.info("Returning {} season champions", champions.size());
     return ResponseEntity.ok(champions);
   }
@@ -76,7 +93,7 @@ public class SeasonChampionController {
           final int year) {
 
     log.info("Received request for race winners for year {}", year);
-    final List<RaceWinner> winners = this.raceWinnerService.getRaceWinners(year);
+    final List<RaceWinner> winners = this.raceWinnerSeedService.getRaceWinners(year);
     log.info("Returning {} race winners", winners.size());
     return ResponseEntity.ok(winners);
   }

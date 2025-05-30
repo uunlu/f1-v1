@@ -1,17 +1,14 @@
 package com.f1.seasonchampions.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.exception.InvalidInputException;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
-import com.f1.seasonchampions.service.seasonchampion.LocalSeasonChampionService;
-import com.f1.seasonchampions.service.seasonchampion.LocalWithRemoteFallbackSeasonChampionService;
-import com.f1.seasonchampions.service.seasonchampion.RemoteSeasonChampionService;
+import com.f1.seasonchampions.repository.SeasonChampionRepository;
+import com.f1.seasonchampions.service.seed.seasonchampion.LocalSeasonChampionSeedService;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,13 +20,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class LocalWithRemoteFallbackSeasonChampionServiceTest {
+class LocalSeasonChampionSeedServiceTest {
+  @Mock private SeasonChampionRepository seasonChampionRepository;
 
-  @Mock private LocalSeasonChampionService localService;
-
-  @Mock private RemoteSeasonChampionService remoteService;
-
-  @InjectMocks private LocalWithRemoteFallbackSeasonChampionService service;
+  @InjectMocks private LocalSeasonChampionSeedService service;
 
   private SeasonChampion champion2021;
   private SeasonChampion champion2022;
@@ -84,53 +78,52 @@ class LocalWithRemoteFallbackSeasonChampionServiceTest {
   }
 
   @Test
-  void whenStartYearGreaterThanEndYear_thenThrowException() {
-    SeasonRangeRequest request = new SeasonRangeRequest(2022, 2021);
-
-    assertThrows(InvalidInputException.class, () -> service.getSeasonChampions(request));
-  }
-
-  @Test
-  void whenLocalServiceHasCompleteData_thenReturnLocalData() {
+  void whenGettingChampions_thenReturnFromRepository() {
     SeasonRangeRequest request = new SeasonRangeRequest(2021, 2022);
     List<SeasonChampion> expectedChampions = Arrays.asList(champion2021, champion2022);
 
-    when(localService.hasCompleteDataForRange(request)).thenReturn(true);
-    when(localService.getSeasonChampions(request)).thenReturn(expectedChampions);
+    when(seasonChampionRepository.findBySeasonBetweenOrderBySeason("2021", "2022"))
+        .thenReturn(expectedChampions);
 
     List<SeasonChampion> result = service.getSeasonChampions(request);
 
     assertEquals(expectedChampions, result);
-    verify(remoteService, never()).getSeasonChampions(any());
+    verify(seasonChampionRepository).findBySeasonBetweenOrderBySeason("2021", "2022");
   }
 
   @Test
-  void whenLocalServiceHasPartialData_thenFetchRemaining() {
-    SeasonRangeRequest request = new SeasonRangeRequest(2021, 2022);
-
-    when(localService.hasCompleteDataForRange(request)).thenReturn(false);
-    when(localService.getSeasonChampions(request))
-        .thenReturn(Collections.singletonList(champion2021));
-    when(remoteService.getSeasonChampions(new SeasonRangeRequest(2022, 2022)))
-        .thenReturn(Collections.singletonList(champion2022));
-    when(localService.saveChampion(champion2022)).thenReturn(champion2022);
-
-    List<SeasonChampion> result = service.getSeasonChampions(request);
-
-    assertEquals(2, result.size());
-    assertEquals("2021", result.get(0).getSeason());
-    assertEquals("2022", result.get(1).getSeason());
-    verify(remoteService, times(1)).getSeasonChampions(any());
-    verify(localService, times(1)).saveChampion(any());
-  }
-
-  @Test
-  void whenSavingChampion_thenDelegateToLocalService() {
-    when(localService.saveChampion(champion2021)).thenReturn(champion2021);
+  void whenSavingChampion_thenSaveToRepository() {
+    when(seasonChampionRepository.save(champion2021)).thenReturn(champion2021);
 
     SeasonChampion result = service.saveChampion(champion2021);
 
     assertEquals(champion2021, result);
-    verify(localService, times(1)).saveChampion(champion2021);
+    verify(seasonChampionRepository).save(champion2021);
+  }
+
+  @Test
+  void whenCheckingCompleteData_withAllYearsPresent_thenReturnTrue() {
+    SeasonRangeRequest request = new SeasonRangeRequest(2021, 2022);
+    List<SeasonChampion> champions = Arrays.asList(champion2021, champion2022);
+
+    when(seasonChampionRepository.findBySeasonBetweenOrderBySeason("2021", "2022"))
+        .thenReturn(champions);
+
+    boolean result = service.hasCompleteDataForRange(request);
+
+    assertTrue(result);
+  }
+
+  @Test
+  void whenCheckingCompleteData_withMissingYears_thenReturnFalse() {
+    SeasonRangeRequest request = new SeasonRangeRequest(2021, 2022);
+    List<SeasonChampion> champions = Collections.singletonList(champion2021);
+
+    when(seasonChampionRepository.findBySeasonBetweenOrderBySeason("2021", "2022"))
+        .thenReturn(champions);
+
+    boolean result = service.hasCompleteDataForRange(request);
+
+    assertFalse(result);
   }
 }
