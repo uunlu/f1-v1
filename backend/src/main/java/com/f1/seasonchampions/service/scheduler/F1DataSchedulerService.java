@@ -1,11 +1,14 @@
 package com.f1.seasonchampions.service.scheduler;
 
+import com.f1.seasonchampions.dto.RaceSyncResult;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import com.f1.seasonchampions.service.seed.racewinner.RaceWinnerSeedService;
 import jakarta.transaction.Transactional;
 import java.time.Year;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,11 +29,12 @@ public class F1DataSchedulerService {
 
   @Scheduled(cron = "${f1.data.sync.cron:0 0 12 * * ?}")
   @Transactional
-  public void syncLatestF1RaceResult() {
+  public RaceSyncResult syncLatestF1RaceResult() {
     log.info("Starting F1DataSchedulerService syncLatestF1RaceResult");
 
+    final List<String> updated = new ArrayList<>();
     try {
-      final var currentYear = Year.now().getValue();
+      final int currentYear = Year.now().getValue();
 
       final Optional<Integer> lastProcessedRound = this.getLastProcessedRound(currentYear);
 
@@ -44,30 +48,35 @@ public class F1DataSchedulerService {
       final var currentYearWinners = this.raceWinnerService.getRaceWinners(currentYear);
       if (currentYearWinners.isEmpty()) {
         log.info("No race winners found");
-        return;
+        return new RaceSyncResult(0, List.of(), true, "No race winners found");
       }
 
       int newRacesProcessed = 0;
 
       for (RaceWinner raceWinner : currentYearWinners) {
-        if (!lastProcessedRound.isPresent()
-            || Integer.parseInt(raceWinner.getRound()) > lastProcessedRound.get()) {
+        final int roundNum = Integer.parseInt(raceWinner.getRound());
+        if (!lastProcessedRound.isPresent() || roundNum > lastProcessedRound.get()) {
           this.raceResultRepository.save(raceWinner);
           newRacesProcessed++;
+          updated.add("Season " + raceWinner.getSeason() + " Round " + raceWinner.getRound());
           log.info(
-              "Saved new race winner result: Season {} Round {} ",
+              "Saved new race winner result: Season {} Round {}",
               raceWinner.getSeason(),
               raceWinner.getRound());
         }
       }
 
       if (newRacesProcessed > 0) {
-        log.info("Successfully sync {} latest F1 race results", newRacesProcessed);
+        log.info("Successfully synced {} latest F1 race results", newRacesProcessed);
+        return new RaceSyncResult(newRacesProcessed, updated, true, "Sync completed successfully");
       } else {
-        log.info("No race winners found");
+        log.info("No new race winners to sync");
+        return new RaceSyncResult(0, List.of(), true, "No new race winners to sync");
       }
+
     } catch (Exception e) {
       log.error("F1DataSchedulerService error sync race data: {}", e.getMessage(), e);
+      return new RaceSyncResult(0, List.of(), false, "Sync failed: " + e.getMessage());
     }
   }
 
