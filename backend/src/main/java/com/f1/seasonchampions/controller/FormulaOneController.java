@@ -48,7 +48,6 @@ public class FormulaOneController {
     log.info("Received public request for race winners of season {}", season);
     final List<RaceWinnerListItem> winners = this.raceWinnerQueryService.getWinnersBySeason(season);
     log.info("Returning {} race winners for season {}", winners.size(), season);
-    log.info(winners.getFirst().getTime());
     return ResponseEntity.ok(winners);
   }
 
@@ -93,7 +92,7 @@ public class FormulaOneController {
       })
   public ResponseEntity<List<SeasonChampionListItem>> getAllSeasons() {
     log.info("Received public request for all available F1 seasons");
-    final List<SeasonChampionListItem> seasons = this.seasonChampionQueryService.getAllSeasons();
+    final var seasons = this.seasonChampionQueryService.getAllSeasons();
     log.info("Returning {} seasons", seasons.size());
     return ResponseEntity.ok(seasons);
   }

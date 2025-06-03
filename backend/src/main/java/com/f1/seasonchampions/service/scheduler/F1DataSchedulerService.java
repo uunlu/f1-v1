@@ -59,7 +59,7 @@ public class F1DataSchedulerService {
 
       for (RaceWinner raceWinner : currentYearWinners) {
         final int roundNum = Integer.parseInt(raceWinner.getRound());
-        if (!lastProcessedRound.isPresent() || roundNum > lastProcessedRound.get()) {
+        if (lastProcessedRound.isEmpty() || roundNum > lastProcessedRound.get()) {
           this.raceResultRepository.save(raceWinner);
           newRacesProcessed++;
           updated.add("Season " + raceWinner.getSeason() + " Round " + raceWinner.getRound());

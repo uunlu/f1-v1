@@ -29,7 +29,8 @@
     <spotbugs.version>4.8.5</spotbugs.version>
     <fmt-maven-plugin.version>2.23</fmt-maven-plugin.version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
-    <docker.image.prefix>${project.groupId}/${project.artifactId}</docker.image.prefix> <!-- Added for Docker image naming -->
+    <docker.image.prefix>${project.groupId}/${project.artifactId}
+    </docker.image.prefix> <!-- Added for Docker image naming -->
   </properties>
 
   <dependencies>
@@ -107,6 +108,16 @@
       <artifactId>spring-boot-starter-jdbc</artifactId>
     </dependency>
 
+    <!-- redis cache -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
     <!-- Testing -->
     <dependency>
       <groupId>org.testcontainers</groupId>
@@ -165,7 +176,7 @@
 
           <!-- Fails the build if coverage rules are not met -->
           <execution>
-<!--            <id>jacoco-check</id>-->
+            <!--            <id>jacoco-check</id>-->
             <id>default-cli</id>
             <phase>verify</phase>
             <goals>
