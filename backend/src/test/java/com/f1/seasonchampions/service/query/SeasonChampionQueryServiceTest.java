@@ -29,12 +29,12 @@ class SeasonChampionQueryServiceTest {
         new SeasonChampionListItemImpl("2020", "Lewis Hamilton", "Mercedes");
     SeasonChampionListItem item2 =
         new SeasonChampionListItemImpl("2021", "Max Verstappen", "Red Bull");
-    List<SeasonChampionListItem> mockList = List.of(item1, item2);
+    var mockList = List.of(item1, item2);
 
     when(seasonChampionRepository.findAllSeasonChampionListItems()).thenReturn(mockList);
 
     // Act
-    List<SeasonChampionListItem> result = seasonChampionQueryService.getAllSeasons();
+    var result = seasonChampionQueryService.getAllSeasons();
 
     // Assert
     assertEquals(2, result.size());

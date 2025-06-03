@@ -2,7 +2,7 @@ package com.f1.seasonchampions.controller;
 
 import com.f1.seasonchampions.dto.RaceWinnerListItem;
 import com.f1.seasonchampions.dto.RaceWinnerSeasonResponse;
-import com.f1.seasonchampions.dto.SeasonChampionListItem;
+import com.f1.seasonchampions.dto.SeasonChampionListItemImpl;
 import com.f1.seasonchampions.service.query.racewinner.RaceWinnerQueryService;
 import com.f1.seasonchampions.service.query.seasonchampion.SeasonChampionQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -90,9 +90,9 @@ public class FormulaOneController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved season list"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
       })
-  public ResponseEntity<List<SeasonChampionListItem>> getAllSeasons() {
+  public ResponseEntity<List<SeasonChampionListItemImpl>> getAllSeasons() {
     log.info("Received public request for all available F1 seasons");
-    final List<SeasonChampionListItem> seasons = this.seasonChampionQueryService.getAllSeasons();
+    final var seasons = this.seasonChampionQueryService.getAllSeasons();
     log.info("Returning {} seasons", seasons.size());
     return ResponseEntity.ok(seasons);
   }

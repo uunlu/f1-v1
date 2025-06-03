@@ -1,6 +1,6 @@
 package com.f1.seasonchampions.service.query.seasonchampion;
 
-import com.f1.seasonchampions.dto.SeasonChampionListItem;
+import com.f1.seasonchampions.dto.SeasonChampionListItemImpl;
 import com.f1.seasonchampions.repository.SeasonChampionRepository;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -17,7 +17,12 @@ public class SeasonChampionQueryService {
 
   @Cacheable("all-seasons-cache")
   @NotNull
-  public List<SeasonChampionListItem> getAllSeasons() {
-    return this.seasonChampionRepository.findAllSeasonChampionListItems();
+  public List<SeasonChampionListItemImpl> getAllSeasons() {
+    return this.seasonChampionRepository.findAllSeasonChampionListItems().stream()
+        .map(
+            item ->
+                new SeasonChampionListItemImpl(
+                    item.getSeason(), item.getDriver(), item.getConstructor()))
+        .toList();
   }
 }
