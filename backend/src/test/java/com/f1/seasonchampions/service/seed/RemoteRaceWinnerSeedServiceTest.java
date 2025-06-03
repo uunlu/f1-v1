@@ -3,7 +3,11 @@ package com.f1.seasonchampions.service.seed;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.dto.*;
+import com.f1.seasonchampions.dto.Race;
+import com.f1.seasonchampions.dto.Result;
+import com.f1.seasonchampions.dto.ResultsByYearResponse;
+import com.f1.seasonchampions.dto.ResultsByYearResponseMRData;
+import com.f1.seasonchampions.dto.ResultsByYearResponseMRDataRaceTable;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
 import java.util.Collections;
