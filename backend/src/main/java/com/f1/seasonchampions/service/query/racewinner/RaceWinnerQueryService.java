@@ -69,7 +69,8 @@ public class RaceWinnerQueryService {
                     winner.getDriver(),
                     winner.getSeasonDriverId(),
                     winner.getSeasonConstructorId(),
-                    winner.getConstructorName()))
+                    winner.getConstructorName(),
+                    winner.getTime()))
         .collect(Collectors.toList());
   }
 
@@ -91,7 +92,7 @@ public class RaceWinnerQueryService {
     final boolean isSeasonConcluded =
         this.seasonStatusService.isSeasonConcluded(season, originalWinners.size());
 
-    List<RaceWinnerListItem> finalWinners;
+    final List<RaceWinnerListItem> finalWinners;
     if (!isSeasonConcluded) {
       log.info("Season {} is ongoing - adjusting champion status", season);
       finalWinners = this.handleOngoingSeasonChampionStatus(originalWinners);

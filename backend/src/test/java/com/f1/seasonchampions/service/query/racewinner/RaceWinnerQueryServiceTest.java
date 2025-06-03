@@ -35,7 +35,8 @@ class RaceWinnerQueryServiceTest {
       String driverId,
       String driverCode,
       String driverName,
-      String constructorName) {
+      String constructorName,
+      String time) {
 
     DriverInfo driverInfo = new DriverInfoImpl(driverId, driverCode, driverName);
 
@@ -46,7 +47,8 @@ class RaceWinnerQueryServiceTest {
         driverInfo,
         driverId,
         "constructor_id_" + constructorName.toLowerCase().replace(" ", "_"),
-        constructorName);
+        constructorName,
+        time);
   }
 
   @Test
@@ -56,9 +58,25 @@ class RaceWinnerQueryServiceTest {
     String season = String.valueOf(year);
 
     RaceWinnerListItemImpl winner1 =
-        createRaceWinner(season, "1", false, "max_verstappen", "VER", "Max Verstappen", "Red Bull");
+        createRaceWinner(
+            season,
+            "1",
+            false,
+            "max_verstappen",
+            "VER",
+            "Max Verstappen",
+            "Red Bull",
+            "1:37:33.584");
     RaceWinnerListItemImpl winner2 =
-        createRaceWinner(season, "2", true, "lewis_hamilton", "HAM", "Lewis Hamilton", "Mercedes");
+        createRaceWinner(
+            season,
+            "2",
+            true,
+            "lewis_hamilton",
+            "HAM",
+            "Lewis Hamilton",
+            "Mercedes",
+            "1:37:33.584");
 
     List<RaceWinnerListItem> expected = List.of(winner1, winner2);
 
@@ -92,9 +110,25 @@ class RaceWinnerQueryServiceTest {
     String season = String.valueOf(year);
 
     RaceWinnerListItemImpl winner1 =
-        createRaceWinner(season, "1", false, "max_verstappen", "VER", "Max Verstappen", "Red Bull");
+        createRaceWinner(
+            season,
+            "1",
+            false,
+            "max_verstappen",
+            "VER",
+            "Max Verstappen",
+            "Red Bull",
+            "1:37:33.584");
     RaceWinnerListItemImpl winner2 =
-        createRaceWinner(season, "2", true, "lewis_hamilton", "HAM", "Lewis Hamilton", "Mercedes");
+        createRaceWinner(
+            season,
+            "2",
+            true,
+            "lewis_hamilton",
+            "HAM",
+            "Lewis Hamilton",
+            "Mercedes",
+            "1:37:33.584");
 
     List<RaceWinnerListItem> originalWinners = List.of(winner1, winner2);
 
@@ -146,11 +180,35 @@ class RaceWinnerQueryServiceTest {
     String season = String.valueOf(year);
 
     RaceWinnerListItemImpl winner1 =
-        createRaceWinner(season, "1", true, "max_verstappen", "VER", "Max Verstappen", "Red Bull");
+        createRaceWinner(
+            season,
+            "1",
+            true,
+            "max_verstappen",
+            "VER",
+            "Max Verstappen",
+            "Red Bull",
+            "1:37:33.584");
     RaceWinnerListItemImpl winner2 =
-        createRaceWinner(season, "2", true, "charles_leclerc", "LEC", "Charles Leclerc", "Ferrari");
+        createRaceWinner(
+            season,
+            "2",
+            true,
+            "charles_leclerc",
+            "LEC",
+            "Charles Leclerc",
+            "Ferrari",
+            "1:37:33.584");
     RaceWinnerListItemImpl winner3 =
-        createRaceWinner(season, "3", false, "lewis_hamilton", "HAM", "Lewis Hamilton", "Mercedes");
+        createRaceWinner(
+            season,
+            "3",
+            false,
+            "lewis_hamilton",
+            "HAM",
+            "Lewis Hamilton",
+            "Mercedes",
+            "1:37:33.584");
 
     List<RaceWinnerListItem> originalWinners = List.of(winner1, winner2, winner3);
 

@@ -161,6 +161,7 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
     final var winner = winnerResult.get();
     final var constructor = winner.getConstructor();
     final var driver = winner.getDriver();
+    final var time = winner.getTime();
 
     if (driver == null || constructor == null) {
       log.warn(
@@ -175,7 +176,7 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
     final RaceWinner raceWinner = new RaceWinner();
     raceWinner.setRound(race.getRound());
     raceWinner.setSeason(race.getSeason());
-    raceWinner.setTime(race.getTime());
+    raceWinner.setTime(time.getTime());
     raceWinner.setConstructor(
         new Constructor(
             constructor.getConstructorId(), constructor.getName(), constructor.getNationality()));

@@ -13,4 +13,5 @@ public class RaceWinnerListItemImpl implements RaceWinnerListItem {
   private String seasonDriverId;
   private String seasonConstructorId;
   private String constructorName;
+  private String time;
 }

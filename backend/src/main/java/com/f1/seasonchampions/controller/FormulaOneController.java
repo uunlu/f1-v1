@@ -48,6 +48,7 @@ public class FormulaOneController {
     log.info("Received public request for race winners of season {}", season);
     final List<RaceWinnerListItem> winners = this.raceWinnerQueryService.getWinnersBySeason(season);
     log.info("Returning {} race winners for season {}", winners.size(), season);
+    log.info(winners.getFirst().getTime());
     return ResponseEntity.ok(winners);
   }
 
@@ -55,7 +56,9 @@ public class FormulaOneController {
   @Operation(
       summary = "Get race winners with season metadata",
       description =
-          "Retrieves race winners with additional season information including champion status and season conclusion status")
+          """
+        Retrieves race winners with additional season information including champion status and season conclusion status
+        """)
   @ApiResponses(
       value = {
         @ApiResponse(
