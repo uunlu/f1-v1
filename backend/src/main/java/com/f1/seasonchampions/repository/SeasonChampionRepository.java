@@ -18,7 +18,7 @@ public interface SeasonChampionRepository extends JpaRepository<SeasonChampion, 
                sc.driver_id AS driver,
                sc.constructor_id AS constructor
         FROM season_champions sc
-        ORDER BY sc.season
+        ORDER BY sc.season DESC
       """,
       nativeQuery = true)
   List<SeasonChampionListItem> findAllSeasonChampionListItems();

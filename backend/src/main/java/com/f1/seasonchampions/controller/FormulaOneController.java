@@ -1,6 +1,7 @@
 package com.f1.seasonchampions.controller;
 
 import com.f1.seasonchampions.dto.RaceWinnerListItem;
+import com.f1.seasonchampions.dto.RaceWinnerSeasonResponse;
 import com.f1.seasonchampions.dto.SeasonChampionListItem;
 import com.f1.seasonchampions.service.query.racewinner.RaceWinnerQueryService;
 import com.f1.seasonchampions.service.query.seasonchampion.SeasonChampionQueryService;
@@ -47,7 +48,38 @@ public class FormulaOneController {
     log.info("Received public request for race winners of season {}", season);
     final List<RaceWinnerListItem> winners = this.raceWinnerQueryService.getWinnersBySeason(season);
     log.info("Returning {} race winners for season {}", winners.size(), season);
+    log.info(winners.getFirst().getTime());
     return ResponseEntity.ok(winners);
+  }
+
+  @GetMapping("/race-winners/{season}/metadata")
+  @Operation(
+      summary = "Get race winners with season metadata",
+      description =
+          """
+        Retrieves race winners with additional season information including champion status and season conclusion status
+        """)
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved race winners with metadata"),
+        @ApiResponse(responseCode = "404", description = "No data found for the given season"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+      })
+  public ResponseEntity<RaceWinnerSeasonResponse> getRaceWinnersWithMetadata(
+      @Parameter(description = "Year of the F1 season (e.g., 2022)") @PathVariable
+          final int season) {
+
+    log.info("Received public request for race winners with metadata for season {}", season);
+    final RaceWinnerSeasonResponse response =
+        this.raceWinnerQueryService.getWinnersWithSeasonMetadata(season);
+    log.info(
+        "Returning race winners with metadata for season {} - concluded: {}, hasChampion: {}",
+        season,
+        response.isSeasonConcluded(),
+        response.isHasChampion());
+    return ResponseEntity.ok(response);
   }
 
   @GetMapping("/seasons")

@@ -13,5 +13,7 @@ public interface RaceWinnerListItem {
 
   String getSeasonConstructorId(); // Newly added
 
-  String getConstructorName(); // Newly added
+  String getConstructorName();
+
+  String getTime();
 }

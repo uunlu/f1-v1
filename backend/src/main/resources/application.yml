@@ -20,3 +20,8 @@ spring:
 
 f1api:
   base-url: https://ergast.com/api/f1
+
+f1:
+  season:
+    total-races: 23
+    end-month: 12

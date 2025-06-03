@@ -3,11 +3,7 @@ package com.f1.seasonchampions.service.seed;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.dto.Race;
-import com.f1.seasonchampions.dto.Result;
-import com.f1.seasonchampions.dto.ResultsByYearResponse;
-import com.f1.seasonchampions.dto.ResultsByYearResponseMRData;
-import com.f1.seasonchampions.dto.ResultsByYearResponseMRDataRaceTable;
+import com.f1.seasonchampions.dto.*;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
 import java.util.Collections;
@@ -45,6 +41,7 @@ class RemoteRaceWinnerSeedServiceTest {
 
     var result = new Result();
     result.setPosition("1");
+    result.setTime(new ResultTime());
 
     var constructor = new com.f1.seasonchampions.dto.Constructor();
     constructor.setConstructorId("red_bull");
@@ -169,6 +166,7 @@ class RemoteRaceWinnerSeedServiceTest {
     // Create a new result for the second race
     var secondResult = new Result();
     secondResult.setPosition("1");
+    secondResult.setTime(new ResultTime());
 
     var secondConstructor = new com.f1.seasonchampions.dto.Constructor();
     secondConstructor.setConstructorId("red_bull");
