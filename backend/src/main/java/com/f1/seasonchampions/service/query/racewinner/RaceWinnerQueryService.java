@@ -20,6 +20,6 @@ public class RaceWinnerQueryService {
 
   @NotNull
   public List<RaceWinnerListItem> getWinnersBySeason(final int year) {
-    return this.raceWinnerRepository.findBySeasonAndOptionalRound2(String.valueOf(year));
+    return this.raceWinnerRepository.findRaceWinnersWithConstructors(String.valueOf(year));
   }
 }

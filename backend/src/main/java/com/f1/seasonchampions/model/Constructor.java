@@ -22,7 +22,7 @@ public class Constructor {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "constructor_id")
+  @Column(name = "constructor_id", unique = true)
   private String constructorId;
 
   @Column(name = "name")
@@ -31,17 +31,9 @@ public class Constructor {
   @Column(name = "nationality")
   private String nationality;
 
-  @Column(name = "season")
-  private String season;
-
-  public Constructor(
-      final String constructorId,
-      final String name,
-      final String nationality,
-      final String season) {
+  public Constructor(final String constructorId, final String name, final String nationality) {
     this.constructorId = constructorId;
     this.name = name;
     this.nationality = nationality;
-    this.season = season;
   }
 }

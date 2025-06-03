@@ -1,14 +1,16 @@
 package com.f1.seasonchampions.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
+@AllArgsConstructor
 public class RaceWinnerListItemImpl implements RaceWinnerListItem {
   private String seasonName;
+  private String round;
   private boolean champion;
   private DriverInfo driver;
   private String seasonDriverId;
-  private String round;
+  private String seasonConstructorId;
+  private String constructorName;
 }

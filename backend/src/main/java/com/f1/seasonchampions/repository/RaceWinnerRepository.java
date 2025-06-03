@@ -19,20 +19,23 @@ public interface RaceWinnerRepository extends JpaRepository<RaceWinner, Long> {
 
   @Query(
       """
-    SELECT\s
-        rw.season AS seasonName,
-        rw.round AS round,
-        CASE WHEN sc.driver IS NOT NULL THEN true ELSE false END AS champion,
-        d AS driver,
-        sc.driver.driverId AS seasonDriverId
-    FROM RaceWinner rw
-    JOIN rw.driver d
-    LEFT JOIN SeasonChampion sc\s
-        ON sc.season = rw.season AND sc.driver.driverId = rw.driver.driverId
-    WHERE rw.season = :season
-    ORDER BY CAST(rw.round AS integer)
-""")
-  List<RaceWinnerListItem> findBySeasonAndOptionalRound2(@Param("season") String season);
+      SELECT
+          rw.season AS seasonName,
+          rw.round AS round,
+          CASE WHEN sc.driver IS NOT NULL THEN true ELSE false END AS champion,
+          d AS driver,
+          sc.driver.driverId AS seasonDriverId,
+          rw.constructor.constructorId AS seasonConstructorId,
+          rw.constructor.name AS constructorName
+      FROM RaceWinner rw
+      JOIN rw.driver d
+      LEFT JOIN SeasonChampion sc ON sc.season = rw.season AND sc.driver.driverId = rw.driver.driverId
+      WHERE rw.season = :season
+      ORDER BY CAST(rw.round AS integer)
+      """)
+  List<RaceWinnerListItem> findRaceWinnersWithConstructors(@Param("season") String season);
 
-  List<RaceWinner> getRaceWinnerBySeason(String season);
+  default List<RaceWinner> getRaceWinnerBySeason(String season) {
+    return this.findBySeasonAndOptionalRound(season, null);
+  }
 }

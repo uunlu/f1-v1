@@ -80,7 +80,6 @@ public class F1ApiClient {
     final var constructor = new Constructor();
     constructor.setConstructorId(constructorDto.getConstructorId());
     constructor.setNationality(constructorDto.getNationality());
-    constructor.setConstructorId(constructor.getConstructorId());
     constructor.setName(constructorDto.getName());
 
     return SeasonChampion.builder()

@@ -1,5 +1,7 @@
 package com.f1.seasonchampions.service.seed.racewinner;
 
+import com.f1.seasonchampions.model.Constructor;
+import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.repository.ConstructorRepository;
 import com.f1.seasonchampions.repository.DriverRepository;
@@ -23,7 +25,6 @@ public class LocalRaceWinnerSeedService implements RaceWinnerSeedService {
   @Transactional(readOnly = true)
   public List<RaceWinner> getRaceWinners(final int year) {
     log.info("Fetching race winners from local database for year: {}", year);
-    //    return this.raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
     final List<RaceWinner> winners =
         this.raceWinnerRepository.findBySeasonAndOptionalRound(String.valueOf(year), null);
     log.info("Fetched {} race winners", winners.size());
@@ -55,7 +56,7 @@ public class LocalRaceWinnerSeedService implements RaceWinnerSeedService {
     }
 
     if (winner.getDriver() != null) {
-      final Optional<com.f1.seasonchampions.model.Driver> existingDriver =
+      final Optional<Driver> existingDriver =
           this.driverRepository.findById(winner.getDriver().getDriverId());
 
       if (existingDriver.isPresent()) {
@@ -67,17 +68,24 @@ public class LocalRaceWinnerSeedService implements RaceWinnerSeedService {
 
     if (winner.getConstructor() != null) {
       final String constructorId = winner.getConstructor().getConstructorId();
-      final Optional<com.f1.seasonchampions.model.Constructor> existingConstructor =
+      log.debug("Looking up constructor with ID: {}", constructorId);
+      final Optional<Constructor> existingConstructor =
           this.constructorRepository.findByConstructorId(constructorId);
 
       if (existingConstructor.isPresent()) {
+        log.debug("Found existing constructor: {}", existingConstructor.get().getName());
         winner.setConstructor(existingConstructor.get());
       } else {
+        log.debug("Saving new constructor: {}", winner.getConstructor().getName());
         winner.setConstructor(this.constructorRepository.save(winner.getConstructor()));
       }
     }
 
-    return this.raceWinnerRepository.save(winner);
+    final RaceWinner savedWinner = this.raceWinnerRepository.save(winner);
+    log.debug(
+        "Saved race winner with constructor: {}",
+        savedWinner.getConstructor() != null ? savedWinner.getConstructor().getName() : "null");
+    return savedWinner;
   }
 
   @Override
