@@ -32,10 +32,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class PostgreSQLTableMappingIntegrationTest {
 
   @Container
-  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-    .withDatabaseName("f1test")
-    .withUsername("test")
-    .withPassword("test");
+  static PostgreSQLContainer<?> postgres =
+      new PostgreSQLContainer<>("postgres:16-alpine")
+          .withDatabaseName("f1test")
+          .withUsername("test")
+          .withPassword("test");
 
   @DynamicPropertySource
   static void configureProperties(DynamicPropertyRegistry registry) {
