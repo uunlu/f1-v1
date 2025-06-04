@@ -19,6 +19,13 @@ spring:
     validate-on-migrate: true
     baseline-on-migrate: true
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
 f1api:
   base-url: https://ergast.com/api/f1
 

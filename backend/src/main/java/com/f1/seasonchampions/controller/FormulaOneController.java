@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/f1")
+@RequestMapping("/api/v1/f1")
 @Tag(
     name = "F1 Public API",
     description = "Public APIs for retrieving F1 race winners and season information")

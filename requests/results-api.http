@@ -11,7 +11,7 @@ GET http://localhost:8080/api/seasons
 GET http://localhost:8080/api/f1/race-winners/2019
 
 ### List all seasons
-GET http://localhost:8080/api/f1/seasons
+GET http://localhost:8080/api/v1/f1/seasons
 
 ### Sync race results
 POST http://localhost:8080/api/internal/sync-latest-race-results
