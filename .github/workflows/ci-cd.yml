@@ -88,9 +88,6 @@ jobs:
           # Get commit SHA for tagging
           SHORT_SHA=${GITHUB_SHA::7}
 
-          # Generate timestamp for unique tagging
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-
           # Set different tags based on branch
           if [ "$BRANCH_NAME" = "main" ]; then
             # For main branch: stable, main-sha
