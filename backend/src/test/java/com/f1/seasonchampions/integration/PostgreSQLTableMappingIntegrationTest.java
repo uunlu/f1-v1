@@ -32,19 +32,18 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class PostgreSQLTableMappingIntegrationTest {
 
   @Container
-  static PostgreSQLContainer<?> postgres =
-      new PostgreSQLContainer<>("postgres:16-alpine")
-          .withDatabaseName("f1test")
-          .withUsername("test")
-          .withPassword("test");
+  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+    .withDatabaseName("f1test")
+    .withUsername("test")
+    .withPassword("test");
 
   @DynamicPropertySource
   static void configureProperties(DynamicPropertyRegistry registry) {
     registry.add("spring.datasource.url", postgres::getJdbcUrl);
     registry.add("spring.datasource.username", postgres::getUsername);
     registry.add("spring.datasource.password", postgres::getPassword);
-    registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
-    registry.add("spring.flyway.enabled", () -> "true");
+    registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+    registry.add("spring.flyway.enabled", () -> "false");
   }
 
   @Autowired private DriverRepository driverRepository;
