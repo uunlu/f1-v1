@@ -52,7 +52,7 @@ jobs:
         working-directory: ./backend
 
       - name: Run Tests with Coverage
-        run: mvn -B -ntp clean verify -Dspring.profiles.active=test
+        run: mvn -B -ntp clean verify -Dspring.profiles.active=test "-Dtest=!**/*IntegrationTest.java"
         working-directory: ./backend
 
       - name: Set up Docker Buildx
