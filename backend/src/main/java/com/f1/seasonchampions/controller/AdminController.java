@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/internal/")
+@RequestMapping("/admin/internal")
 @Tag(
     name = "F1 Admin API",
     description = "Admin/internal APIs for managing F1 data synchronization")
@@ -25,7 +26,7 @@ public class AdminController {
 
   private final F1DataSchedulerService schedulerService;
 
-  @PostMapping("/sync-latest-race-results")
+  @PostMapping(value = "/sync-latest-race-results", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       summary = "Trigger synchronization of the latest F1 race results",
       description =
@@ -33,6 +34,7 @@ public class AdminController {
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "Sync process completed"),
+        @ApiResponse(responseCode = "201", description = "Sync process completed with updates"),
         @ApiResponse(
             responseCode = "500",
             description = "Internal error while syncing race results")
@@ -44,13 +46,16 @@ public class AdminController {
     log.info("Sync completed with {} updates", result.updatedCount());
 
     if (result.success()) {
-      return ResponseEntity.ok(result);
+      final HttpStatus status = result.updatedCount() > 0 ? HttpStatus.CREATED : HttpStatus.OK;
+      return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(result);
     } else {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(result);
     }
   }
 
-  @PostMapping("/sync-season-champions")
+  @PostMapping(value = "/sync-season-champions", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       summary = "Trigger synchronization of F1 season champions",
       description =
@@ -58,6 +63,7 @@ public class AdminController {
   @ApiResponses(
       value = {
         @ApiResponse(responseCode = "200", description = "Sync process completed"),
+        @ApiResponse(responseCode = "201", description = "Sync process completed with updates"),
         @ApiResponse(
             responseCode = "500",
             description = "Internal error while syncing season champions")
@@ -69,9 +75,12 @@ public class AdminController {
     log.info("Season champions sync completed with {} updates", result.updatedCount());
 
     if (result.success()) {
-      return ResponseEntity.ok(result);
+      final HttpStatus status = result.updatedCount() > 0 ? HttpStatus.CREATED : HttpStatus.OK;
+      return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(result);
     } else {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(result);
     }
   }
 }

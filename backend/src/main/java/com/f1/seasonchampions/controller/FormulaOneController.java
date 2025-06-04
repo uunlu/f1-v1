@@ -13,15 +13,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/f1")
+@RequestMapping("/f1")
 @Tag(
     name = "F1 Public API",
     description = "Public APIs for retrieving F1 race winners and season information")
@@ -31,7 +34,7 @@ public class FormulaOneController {
   private final RaceWinnerQueryService raceWinnerQueryService;
   private final SeasonChampionQueryService seasonChampionQueryService;
 
-  @GetMapping("/race-winners/{season}")
+  @GetMapping(value = "/race-winners/{season}", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       summary = "Get race winners for a specific season",
       description = "Retrieves all race winners from the database for the specified F1 season")
@@ -41,6 +44,7 @@ public class FormulaOneController {
         @ApiResponse(responseCode = "404", description = "No data found for the given season"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
       })
+  @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<List<RaceWinnerListItem>> getRaceWinnersBySeason(
       @Parameter(description = "Year of the F1 season (e.g., 2022)") @PathVariable
           final int season) {
@@ -48,10 +52,12 @@ public class FormulaOneController {
     log.info("Received public request for race winners of season {}", season);
     final List<RaceWinnerListItem> winners = this.raceWinnerQueryService.getWinnersBySeason(season);
     log.info("Returning {} race winners for season {}", winners.size(), season);
-    return ResponseEntity.ok(winners);
+    return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(winners);
   }
 
-  @GetMapping("/race-winners/{season}/metadata")
+  @GetMapping(
+      value = "/race-winners/{season}/metadata",
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       summary = "Get race winners with season metadata",
       description =
@@ -66,6 +72,7 @@ public class FormulaOneController {
         @ApiResponse(responseCode = "404", description = "No data found for the given season"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
       })
+  @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<RaceWinnerSeasonResponse> getRaceWinnersWithMetadata(
       @Parameter(description = "Year of the F1 season (e.g., 2022)") @PathVariable
           final int season) {
@@ -78,10 +85,10 @@ public class FormulaOneController {
         season,
         response.isSeasonConcluded(),
         response.isHasChampion());
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
   }
 
-  @GetMapping("/seasons")
+  @GetMapping(value = "/seasons", produces = MediaType.APPLICATION_JSON_VALUE)
   @Operation(
       summary = "Get all available F1 seasons",
       description = "Retrieves a list of all seasons for which data is available in the system")
@@ -90,10 +97,11 @@ public class FormulaOneController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved season list"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
       })
+  @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<List<SeasonChampionListItem>> getAllSeasons() {
     log.info("Received public request for all available F1 seasons");
     final var seasons = this.seasonChampionQueryService.getAllSeasons();
     log.info("Returning {} seasons", seasons.size());
-    return ResponseEntity.ok(seasons);
+    return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(seasons);
   }
 }
