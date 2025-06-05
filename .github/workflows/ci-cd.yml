@@ -83,7 +83,6 @@ jobs:
             echo "DOCKER_TAGS=ugurunlu/f1-app-v1:dev-${SHORT_SHA}" >> $GITHUB_ENV
             echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:dev-${SHORT_SHA}" >> $GITHUB_ENV
           else
-            # For other branches/PRs: branch-name-timestamp
             # Replace slashes and other invalid characters in branch name
             SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '/' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-zA-Z0-9-]/-/g')
             echo "DOCKER_TAGS=ugurunlu/f1-app-v1:${SAFE_BRANCH_NAME}-${SHORT_SHA}" >> $GITHUB_ENV
