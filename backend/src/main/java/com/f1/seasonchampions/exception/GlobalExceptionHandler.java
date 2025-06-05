@@ -17,7 +17,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  // Create a standard error response structure
   @Getter
   private static class ApiError {
     private final Instant timestamp;
@@ -34,7 +33,6 @@ public class GlobalExceptionHandler {
       this.details = new HashMap<>();
     }
 
-    // Add a validation error detail
     void addValidationError(final String field, final String detailMessage) {
       this.details.put(field, detailMessage);
     }

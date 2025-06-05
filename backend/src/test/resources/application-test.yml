@@ -4,6 +4,13 @@ spring:
     username: sa
     password: sa
     driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 2
+      minimum-idle: 1
+      max-lifetime: 10000
+      connection-timeout: 5000
+      idle-timeout: 30000
+      leak-detection-threshold: 60000
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
@@ -15,4 +22,5 @@ spring:
 logging:
   level:
     com.f1.seasonchampions: DEBUG
-    org.hibernate.SQL: DEBUG 
+    org.hibernate.SQL: DEBUG
+    com.zaxxer.hikari: WARN 
