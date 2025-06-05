@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,9 @@ public class F1DataSchedulerService {
   private final RaceWinnerSeedService raceWinnerService;
   private final RaceWinnerRepository raceResultRepository;
   private final SeasonChampionSeedService seasonChampionSeedService;
+
+  @Value("${f1.season.total-races:23}")
+  private int totalRacesInSeason;
 
   public F1DataSchedulerService(
       final RaceWinnerSeedService raceWinnerService,
@@ -129,6 +133,100 @@ public class F1DataSchedulerService {
     } catch (Exception e) {
       log.error("F1DataSchedulerService error sync season champions: {}", e.getMessage(), e);
       return new RaceSyncResult(0, List.of(), false, "Sync failed: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Synchronizes all F1 race results from 2005 to the current year. Intended to be used once during
+   * application startup to seed the database.
+   *
+   * @return Result of the synchronization process
+   */
+  @Transactional
+  public RaceSyncResult syncAllHistoricalRaces() {
+    final int currentYear = Year.now().getValue();
+    final int startYear = 2005;
+    int totalUpdates = 0;
+    boolean overallSuccess = true;
+    final List<String> updatedRaces = new ArrayList<>();
+
+    log.info("Starting historical race sync from {} to {}", startYear, currentYear);
+
+    try {
+      for (int year = startYear; year <= currentYear; year++) {
+        log.info("Syncing races for year {}", year);
+        final RaceSyncResult yearResult = this.syncRacesForYear(year);
+
+        if (!yearResult.success()) {
+          log.error("Failed to sync races for year {}: {}", year, yearResult.message());
+          overallSuccess = false;
+        } else {
+          totalUpdates += yearResult.updatedCount();
+          updatedRaces.addAll(yearResult.updatedRaces());
+        }
+      }
+
+      final String message =
+          overallSuccess
+              ? "Historical race sync completed successfully"
+              : "Historical race sync completed with some errors";
+
+      return new RaceSyncResult(totalUpdates, updatedRaces, overallSuccess, message);
+    } catch (Exception e) {
+      log.error("Error syncing historical races", e);
+      return new RaceSyncResult(0, List.of(), false, "Sync failed: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Synchronizes race results for a specific year.
+   *
+   * @param year The year to sync race results for
+   * @return Result of the synchronization process
+   */
+  @Transactional
+  private RaceSyncResult syncRacesForYear(final int year) {
+    try {
+      // Check if we already have complete data for this year
+      if (this.raceWinnerService.hasCompleteDataForYear(year)) {
+        log.debug("Year {} already has complete race data, skipping", year);
+        return new RaceSyncResult(0, List.of(), true, "Data already exists for year " + year);
+      }
+
+      final List<RaceWinner> raceWinners = this.raceWinnerService.getRaceWinners(year);
+      final List<String> updatedRaces = new ArrayList<>();
+      int savedCount = 0;
+
+      for (RaceWinner raceWinner : raceWinners) {
+        try {
+          // The seed service handles duplicate checking internally
+          this.raceWinnerService.saveRaceWinner(raceWinner);
+          savedCount++;
+          updatedRaces.add("Season " + raceWinner.getSeason() + " Round " + raceWinner.getRound());
+          log.debug(
+              "Saved race winner: Season {} Round {}",
+              raceWinner.getSeason(),
+              raceWinner.getRound());
+        } catch (Exception e) {
+          log.warn(
+              "Failed to save race winner for Season {} Round {}: {}",
+              raceWinner.getSeason(),
+              raceWinner.getRound(),
+              e.getMessage());
+        }
+      }
+
+      log.info("Synced {} races for year {}", savedCount, year);
+      return new RaceSyncResult(
+          savedCount,
+          updatedRaces,
+          true,
+          "Successfully synced " + savedCount + " races for year " + year);
+
+    } catch (Exception e) {
+      log.error("Error syncing races for year {}: {}", year, e.getMessage(), e);
+      return new RaceSyncResult(
+          0, List.of(), false, "Failed to sync year " + year + ": " + e.getMessage());
     }
   }
 }

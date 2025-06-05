@@ -80,4 +80,29 @@ public class AdminController {
         .contentType(MediaType.APPLICATION_JSON)
         .body(result);
   }
+
+  @PostMapping(value = "/sync-all-historical-races", produces = MediaType.APPLICATION_JSON_VALUE)
+  @Operation(
+      summary = "Synchronize all historical F1 race results",
+      description =
+          "Updates the database with all F1 race results from 2005 to the current year. "
+              + "Typically used for initial data seeding.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Sync process completed with no updates"),
+        @ApiResponse(responseCode = "201", description = "Sync process completed with updates"),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal error while syncing historical race results")
+      })
+  public ResponseEntity<RaceSyncResult> syncAllHistoricalRaces() {
+    log.info("Admin triggered sync for all historical F1 race results (2005 to present)");
+
+    final RaceSyncResult result = this.schedulerService.syncAllHistoricalRaces();
+    log.info("Historical races sync completed with {} updates", result.updatedCount());
+
+    return ResponseEntity.status(this.determineStatus(result))
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(result);
+  }
 }
