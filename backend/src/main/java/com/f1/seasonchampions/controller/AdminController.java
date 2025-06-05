@@ -45,14 +45,16 @@ public class AdminController {
     final RaceSyncResult result = this.schedulerService.syncLatestF1RaceResult();
     log.info("Sync completed with {} updates", result.updatedCount());
 
-    if (result.success()) {
-      final HttpStatus status = result.updatedCount() > 0 ? HttpStatus.CREATED : HttpStatus.OK;
-      return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(result);
-    } else {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .contentType(MediaType.APPLICATION_JSON)
-          .body(result);
+    return ResponseEntity.status(this.determineStatus(result))
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(result);
+  }
+
+  private HttpStatus determineStatus(final RaceSyncResult result) {
+    if (!result.success()) {
+      return HttpStatus.INTERNAL_SERVER_ERROR;
     }
+    return result.updatedCount() > 0 ? HttpStatus.CREATED : HttpStatus.OK;
   }
 
   @PostMapping(value = "/sync-season-champions", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,13 +76,8 @@ public class AdminController {
     final RaceSyncResult result = this.schedulerService.syncSeasonChampions();
     log.info("Season champions sync completed with {} updates", result.updatedCount());
 
-    if (result.success()) {
-      final HttpStatus status = result.updatedCount() > 0 ? HttpStatus.CREATED : HttpStatus.OK;
-      return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(result);
-    } else {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .contentType(MediaType.APPLICATION_JSON)
-          .body(result);
-    }
+    return ResponseEntity.status(this.determineStatus(result))
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(result);
   }
 }
