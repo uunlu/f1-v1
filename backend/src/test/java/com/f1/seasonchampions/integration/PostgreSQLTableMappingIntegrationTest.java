@@ -15,8 +15,11 @@ import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import com.f1.seasonchampions.repository.SeasonChampionRepository;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -29,6 +32,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @Testcontainers
 @Transactional
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PostgreSQLTableMappingIntegrationTest {
 
   @Container
@@ -36,15 +40,31 @@ class PostgreSQLTableMappingIntegrationTest {
       new PostgreSQLContainer<>("postgres:16-alpine")
           .withDatabaseName("f1test")
           .withUsername("test")
-          .withPassword("test");
+          .withPassword("test")
+          .withStartupTimeoutSeconds(60)
+          .withConnectTimeoutSeconds(5);
 
   @DynamicPropertySource
   static void configureProperties(DynamicPropertyRegistry registry) {
     registry.add("spring.datasource.url", postgres::getJdbcUrl);
     registry.add("spring.datasource.username", postgres::getUsername);
     registry.add("spring.datasource.password", postgres::getPassword);
+    registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+    registry.add("spring.jpa.database-platform", () -> "org.hibernate.dialect.PostgreSQLDialect");
     registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
     registry.add("spring.flyway.enabled", () -> "false");
+    registry.add("spring.datasource.hikari.maximum-pool-size", () -> "2");
+    registry.add("spring.datasource.hikari.minimum-idle", () -> "1");
+    registry.add("spring.datasource.hikari.max-lifetime", () -> "10000");
+    registry.add("spring.datasource.hikari.connection-timeout", () -> "5000");
+    registry.add("spring.datasource.hikari.idle-timeout", () -> "30000");
+  }
+
+  @AfterAll
+  static void cleanup() {
+    if (postgres != null && postgres.isRunning()) {
+      postgres.stop();
+    }
   }
 
   @Autowired private DriverRepository driverRepository;
