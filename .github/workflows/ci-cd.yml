@@ -79,7 +79,7 @@ jobs:
             echo "DOCKER_TAGS=ugurunlu/f1-app-v1:stable,ugurunlu/f1-app-v1:main-${SHORT_SHA}" >> $GITHUB_ENV
             echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:stable" >> $GITHUB_ENV
           elif [ "$BRANCH_NAME" = "develop" ]; then
-            # For develop branch: latest, dev-sha
+            # For develop branch: dev-sha
             echo "DOCKER_TAGS=ugurunlu/f1-app-v1:dev-${SHORT_SHA}" >> $GITHUB_ENV
             echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:dev-${SHORT_SHA}" >> $GITHUB_ENV
           else
