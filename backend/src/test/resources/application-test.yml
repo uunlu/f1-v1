@@ -15,7 +15,10 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
   flyway:
     enabled: false
 
@@ -23,4 +26,10 @@ logging:
   level:
     com.f1.seasonchampions: DEBUG
     org.hibernate.SQL: DEBUG
-    com.zaxxer.hikari: WARN 
+    com.zaxxer.hikari: WARN
+
+f1:
+  seasonchampions:
+    startup:
+      seeding:
+        enabled: false 

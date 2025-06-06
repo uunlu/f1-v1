@@ -1,7 +1,9 @@
 package com.f1.seasonchampions.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.f1.seasonchampions.model.Constructor;
@@ -10,6 +12,7 @@ import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.service.seed.seasonchampion.RemoteSeasonChampionSeedService;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RemoteSeasonChampionSeedServiceTest {
   @Mock private F1ApiClient f1ApiClient;
+  @Mock private RateLimitedApiClientService rateLimitedApiClient;
 
   @InjectMocks private RemoteSeasonChampionSeedService service;
 
@@ -75,6 +79,14 @@ class RemoteSeasonChampionSeedServiceTest {
             .driver(driver2022)
             .constructor(constructor2022)
             .build();
+
+    // Mock the rate limited operation to execute the supplier directly
+    when(rateLimitedApiClient.executeRateLimitedOperation(any(Supplier.class), anyString()))
+        .thenAnswer(
+            invocation -> {
+              Supplier<SeasonChampion> supplier = invocation.getArgument(0);
+              return supplier.get();
+            });
   }
 
   @Test
