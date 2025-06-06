@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
@@ -81,7 +82,8 @@ class RemoteSeasonChampionSeedServiceTest {
             .build();
 
     // Mock the rate limited operation to execute the supplier directly
-    when(rateLimitedApiClient.executeRateLimitedOperation(any(Supplier.class), anyString()))
+    lenient()
+        .when(rateLimitedApiClient.executeRateLimitedOperation(any(Supplier.class), anyString()))
         .thenAnswer(
             invocation -> {
               Supplier<SeasonChampion> supplier = invocation.getArgument(0);
