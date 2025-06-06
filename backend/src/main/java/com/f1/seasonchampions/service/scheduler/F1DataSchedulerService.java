@@ -7,12 +7,15 @@ import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import com.f1.seasonchampions.service.seed.racewinner.RaceWinnerSeedService;
 import com.f1.seasonchampions.service.seed.seasonchampion.SeasonChampionSeedService;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,8 +28,8 @@ public class F1DataSchedulerService {
   private final RaceWinnerRepository raceResultRepository;
   private final SeasonChampionSeedService seasonChampionSeedService;
 
-  @Value("${f1.season.total-races:23}")
-  private int totalRacesInSeason;
+  @Value("${f1.season.start-year:2005}")
+  private int startYear;
 
   public F1DataSchedulerService(
       final RaceWinnerSeedService raceWinnerService,
@@ -35,6 +38,12 @@ public class F1DataSchedulerService {
     this.raceWinnerService = raceWinnerService;
     this.raceResultRepository = raceResultRepository;
     this.seasonChampionSeedService = seasonChampionSeedService;
+  }
+
+  @PostConstruct
+  public void init() {
+    log.info("F1DataSchedulerService initialized with start year: {}", this.startYear);
+    log.info("Using race winner service: {}", this.raceWinnerService.getClass().getSimpleName());
   }
 
   @Scheduled(cron = "${f1.data.sync.cron:0 0 12 * * ?}")
@@ -102,12 +111,11 @@ public class F1DataSchedulerService {
 
     final List<String> updated = new ArrayList<>();
     try {
-      final int startYear = 2005; // you can externalize this if you want
       final int endYear = Year.now().getValue();
 
       final List<SeasonChampion> champions =
           this.seasonChampionSeedService.getSeasonChampions(
-              new SeasonRangeRequest(startYear, endYear));
+              new SeasonRangeRequest(this.startYear, endYear));
 
       if (champions.isEmpty()) {
         log.info("No season champions found");
@@ -145,26 +153,30 @@ public class F1DataSchedulerService {
   @Transactional
   public RaceSyncResult syncAllHistoricalRaces() {
     final int currentYear = Year.now().getValue();
-    final int startYear = 2005;
-    int totalUpdates = 0;
-    boolean overallSuccess = true;
-    final List<String> updatedRaces = new ArrayList<>();
-
-    log.info("Starting historical race sync from {} to {}", startYear, currentYear);
+    final int historicalStartYear = 2005;
+    log.info("Starting historical race sync from {} to {}", historicalStartYear, currentYear);
 
     try {
-      for (int year = startYear; year <= currentYear; year++) {
-        log.info("Syncing races for year {}", year);
-        final RaceSyncResult yearResult = this.syncRacesForYear(year);
+      // Create a list of futures for each year
+      final List<CompletableFuture<RaceSyncResult>> futures =
+          IntStream.rangeClosed(historicalStartYear, currentYear)
+              .mapToObj(
+                  year ->
+                      CompletableFuture.supplyAsync(
+                          () -> {
+                            log.info("Syncing races for year {}", year);
+                            return this.syncRacesForYear(year);
+                          }))
+              .toList();
 
-        if (!yearResult.success()) {
-          log.error("Failed to sync races for year {}: {}", year, yearResult.message());
-          overallSuccess = false;
-        } else {
-          totalUpdates += yearResult.updatedCount();
-          updatedRaces.addAll(yearResult.updatedRaces());
-        }
-      }
+      // Wait for all futures to complete
+      final List<RaceSyncResult> results = futures.stream().map(CompletableFuture::join).toList();
+
+      // Aggregate results
+      final boolean overallSuccess = results.stream().allMatch(RaceSyncResult::success);
+      final int totalUpdates = results.stream().mapToInt(RaceSyncResult::updatedCount).sum();
+      final List<String> updatedRaces =
+          results.stream().flatMap(result -> result.updatedRaces().stream()).toList();
 
       final String message =
           overallSuccess
@@ -201,6 +213,7 @@ public class F1DataSchedulerService {
         try {
           // The seed service handles duplicate checking internally
           this.raceWinnerService.saveRaceWinner(raceWinner);
+
           savedCount++;
           updatedRaces.add("Season " + raceWinner.getSeason() + " Round " + raceWinner.getRound());
           log.debug(

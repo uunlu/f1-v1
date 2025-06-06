@@ -36,6 +36,20 @@ public class F1DataStartupSeeder {
     log.info("Starting F1 historical data seeding (2005 to current year)");
 
     try {
+      final RaceSyncResult seasonResult = this.schedulerService.syncSeasonChampions();
+      if (seasonResult.success()) {
+        log.info(
+            "F1 data seeding completed successfully - {} season champions updated",
+            seasonResult.updatedCount());
+      } else {
+        log.warn(
+            "F1 data seeding season champions completed with issues: {}", seasonResult.message());
+      }
+    } catch (Exception e) {
+      log.error("Failed to seed F1 season champions historical data during startup", e);
+    }
+
+    try {
       final RaceSyncResult result = this.schedulerService.syncAllHistoricalRaces();
 
       if (result.success()) {
@@ -45,7 +59,7 @@ public class F1DataStartupSeeder {
         log.warn("F1 data seeding completed with issues: {}", result.message());
       }
     } catch (Exception e) {
-      log.error("Failed to seed F1 historical data during startup", e);
+      log.error("Failed to seed F1 race winners historical data during startup", e);
     }
   }
 }

@@ -3,43 +3,28 @@ package com.f1.seasonchampions.service.seed.seasonchampion;
 import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.service.F1ApiClient;
-import io.github.resilience4j.ratelimiter.RateLimiter;
-import io.github.resilience4j.ratelimiter.RateLimiterConfig;
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
-import jakarta.annotation.PostConstruct;
-import java.time.Duration;
+import com.f1.seasonchampions.service.RateLimitedApiClientService;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class RemoteSeasonChampionSeedService implements SeasonChampionSeedService {
-  private static final int TIMEOUT_IN_SECOND = 5;
 
   private final F1ApiClient f1ApiClient;
-  private RateLimiter rateLimiter;
+  private final RateLimitedApiClientService rateLimitedApiClient;
 
-  @PostConstruct
-  public void init() {
-    // Configure rate limiter
-    final RateLimiterConfig config =
-        RateLimiterConfig.custom()
-            .limitRefreshPeriod(Duration.ofSeconds(1))
-            .limitForPeriod(1)
-            .timeoutDuration(
-                Duration.ofSeconds(
-                    TIMEOUT_IN_SECOND)) // Magic number warning intentionally not fixed
-            .build();
-
-    final RateLimiterRegistry registry = RateLimiterRegistry.of(config);
-    this.rateLimiter = registry.rateLimiter("apiRateLimiter");
-  }
-
+  @Retryable(
+      retryFor = RestClientException.class,
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 3000, multiplier = 2))
   @Override
   public List<SeasonChampion> getSeasonChampions(final SeasonRangeRequest request) {
     log.info(
@@ -52,13 +37,12 @@ public class RemoteSeasonChampionSeedService implements SeasonChampionSeedServic
     for (int year = request.getStartYear(); year <= request.getEndYear(); year++) {
       final int currentYear = year;
 
-      // Wrap the API call with rate limiter
-      final Supplier<SeasonChampion> rateLimitedCall =
-          RateLimiter.decorateSupplier(
-              this.rateLimiter, () -> this.fetchChampionForYear(currentYear));
-
       try {
-        final SeasonChampion champion = rateLimitedCall.get();
+        final SeasonChampion champion =
+            this.rateLimitedApiClient.executeRateLimitedOperation(
+                () -> this.fetchChampionForYear(currentYear),
+                "Fetch champion for year " + currentYear);
+
         if (champion != null) {
           champions.add(champion);
         }

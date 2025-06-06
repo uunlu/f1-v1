@@ -28,7 +28,7 @@ class RemoteSeasonChampionSeedServiceTest {
 
   @BeforeEach
   void setUp() {
-    service.init(); // Initialize rate limiter
+    // Rate limiter is now centralized and automatically initialized
 
     Driver driver2021 =
         Driver.builder()

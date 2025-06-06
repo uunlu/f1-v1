@@ -5,8 +5,9 @@ import static org.mockito.Mockito.*;
 
 import com.f1.seasonchampions.dto.*;
 import com.f1.seasonchampions.model.RaceWinner;
+import com.f1.seasonchampions.service.RateLimitedApiClientService;
 import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 class RemoteRaceWinnerSeedServiceTest {
 
   @Mock private RestTemplate restTemplate;
+  @Mock private RateLimitedApiClientService rateLimitedApiClient;
 
   @InjectMocks private RemoteRaceWinnerSeedService service;
 
@@ -30,7 +32,7 @@ class RemoteRaceWinnerSeedServiceTest {
 
   @BeforeEach
   void setUp() {
-    service.init(); // manually call PostConstruct
+    // Rate limiter is now centralized and automatically initialized
     ReflectionTestUtils.setField(service, "apiBaseUrl", "https://api.test.com/ergast/f1");
 
     // Setup mock race data
@@ -41,7 +43,10 @@ class RemoteRaceWinnerSeedServiceTest {
 
     var result = new Result();
     result.setPosition("1");
-    result.setTime(new ResultTime());
+
+    var resultTime = new ResultTime();
+    resultTime.setTime("1:30.123"); // Add the missing time value
+    result.setTime(resultTime);
 
     var constructor = new com.f1.seasonchampions.dto.Constructor();
     constructor.setConstructorId("red_bull");
@@ -75,7 +80,7 @@ class RemoteRaceWinnerSeedServiceTest {
     response.setMrData(mrData);
 
     String url = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=0";
-    when(restTemplate.getForEntity(url, ResultsByYearResponse.class))
+    when(rateLimitedApiClient.executeRateLimitedRequest(eq(url), eq(ResultsByYearResponse.class)))
         .thenReturn(ResponseEntity.ok(response));
 
     // Act
@@ -94,7 +99,7 @@ class RemoteRaceWinnerSeedServiceTest {
   void whenApiCallFails_thenReturnEmptyList() {
     // Arrange
     String url = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=0";
-    when(restTemplate.getForEntity(url, ResultsByYearResponse.class))
+    when(rateLimitedApiClient.executeRateLimitedRequest(eq(url), eq(ResultsByYearResponse.class)))
         .thenThrow(new RestClientException("API Error"));
 
     // Act
@@ -108,7 +113,7 @@ class RemoteRaceWinnerSeedServiceTest {
   void whenResponseIsNull_thenReturnEmptyList() {
     // Arrange
     String url = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=0";
-    when(restTemplate.getForEntity(url, ResultsByYearResponse.class))
+    when(rateLimitedApiClient.executeRateLimitedRequest(eq(url), eq(ResultsByYearResponse.class)))
         .thenReturn(ResponseEntity.ok(null));
 
     // Act
@@ -127,7 +132,7 @@ class RemoteRaceWinnerSeedServiceTest {
     response.setMrData(mrData);
 
     String url = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=0";
-    when(restTemplate.getForEntity(url, ResultsByYearResponse.class))
+    when(rateLimitedApiClient.executeRateLimitedRequest(eq(url), eq(ResultsByYearResponse.class)))
         .thenReturn(ResponseEntity.ok(response));
 
     // Act
@@ -139,54 +144,97 @@ class RemoteRaceWinnerSeedServiceTest {
 
   @Test
   void whenMultiplePages_thenFetchAllResults() {
-    // First page response
+    // First page response - return 30 races to avoid early exit
     ResultsByYearResponseMRData firstPageData = new ResultsByYearResponseMRData();
-    firstPageData.setTotal("60"); // Set total to require multiple pages
+    firstPageData.setTotal("32"); // Set total to require multiple pages
     ResultsByYearResponseMRDataRaceTable firstPageTable =
         new ResultsByYearResponseMRDataRaceTable();
-    Race firstRace = mockRace; // This already has position="1" from setUp
-    firstPageTable.setRaces(Collections.singletonList(firstRace));
+
+    // Create 30 races for first page (equal to limit)
+    List<Race> firstPageRaces = new ArrayList<>();
+    for (int i = 1; i <= 30; i++) {
+      Race race = new Race();
+      race.setSeason("2023");
+      race.setRound(String.valueOf(i));
+      race.setTime("15:00");
+
+      var result = new Result();
+      result.setPosition("1");
+
+      var resultTime = new ResultTime();
+      resultTime.setTime("1:30." + String.format("%03d", i));
+      result.setTime(resultTime);
+
+      var constructor = new com.f1.seasonchampions.dto.Constructor();
+      constructor.setConstructorId("red_bull");
+      constructor.setName("Red Bull Racing");
+      constructor.setNationality("Austrian");
+
+      var driver = new com.f1.seasonchampions.dto.Driver();
+      driver.setDriverId("max_verstappen");
+      driver.setPermanentNumber("33");
+      driver.setCode("VER");
+      driver.setGivenName("Max");
+      driver.setFamilyName("Verstappen");
+      driver.setDateOfBirth("1997-09-30");
+      driver.setNationality("Dutch");
+
+      result.setConstructor(constructor);
+      result.setDriver(driver);
+      race.setResults(List.of(result));
+
+      firstPageRaces.add(race);
+    }
+
+    firstPageTable.setRaces(firstPageRaces);
     firstPageData.setRaceTable(firstPageTable);
 
     var firstPageResponse = new ResultsByYearResponse();
     firstPageResponse.setMrData(firstPageData);
 
-    // Second page response with its own unique race and result
+    // Second page response - return 2 races (less than limit, will trigger end)
     ResultsByYearResponseMRData secondPageData = new ResultsByYearResponseMRData();
-    secondPageData.setTotal("60"); // Same total as first page
+    secondPageData.setTotal("32"); // Same total as first page
     ResultsByYearResponseMRDataRaceTable secondPageTable =
         new ResultsByYearResponseMRDataRaceTable();
 
-    // Create a new race with its own result set
-    Race secondRace = new Race();
-    secondRace.setSeason("2023");
-    secondRace.setRound("2");
-    secondRace.setTime("15:00");
+    // Create 2 races for second page
+    List<Race> secondPageRaces = new ArrayList<>();
+    for (int i = 31; i <= 32; i++) {
+      Race race = new Race();
+      race.setSeason("2023");
+      race.setRound(String.valueOf(i));
+      race.setTime("15:00");
 
-    // Create a new result for the second race
-    var secondResult = new Result();
-    secondResult.setPosition("1");
-    secondResult.setTime(new ResultTime());
+      var result = new Result();
+      result.setPosition("1");
 
-    var secondConstructor = new com.f1.seasonchampions.dto.Constructor();
-    secondConstructor.setConstructorId("red_bull");
-    secondConstructor.setName("Red Bull Racing");
-    secondConstructor.setNationality("Austrian");
+      var resultTime = new ResultTime();
+      resultTime.setTime("1:29." + String.format("%03d", i));
+      result.setTime(resultTime);
 
-    var secondDriver = new com.f1.seasonchampions.dto.Driver();
-    secondDriver.setDriverId("max_verstappen");
-    secondDriver.setPermanentNumber("33");
-    secondDriver.setCode("VER");
-    secondDriver.setGivenName("Max");
-    secondDriver.setFamilyName("Verstappen");
-    secondDriver.setDateOfBirth("1997-09-30");
-    secondDriver.setNationality("Dutch");
+      var constructor = new com.f1.seasonchampions.dto.Constructor();
+      constructor.setConstructorId("ferrari");
+      constructor.setName("Ferrari");
+      constructor.setNationality("Italian");
 
-    secondResult.setConstructor(secondConstructor);
-    secondResult.setDriver(secondDriver);
-    secondRace.setResults(List.of(secondResult));
+      var driver = new com.f1.seasonchampions.dto.Driver();
+      driver.setDriverId("charles_leclerc");
+      driver.setPermanentNumber("16");
+      driver.setCode("LEC");
+      driver.setGivenName("Charles");
+      driver.setFamilyName("Leclerc");
+      driver.setDateOfBirth("1997-10-16");
+      driver.setNationality("Monégasque");
 
-    secondPageTable.setRaces(Collections.singletonList(secondRace));
+      result.setConstructor(constructor);
+      result.setDriver(driver);
+      race.setResults(List.of(result));
+
+      secondPageRaces.add(race);
+    }
+
+    secondPageTable.setRaces(secondPageRaces);
     secondPageData.setRaceTable(secondPageTable);
 
     var secondPageResponse = new ResultsByYearResponse();
@@ -196,21 +244,28 @@ class RemoteRaceWinnerSeedServiceTest {
     String firstPageUrl = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=0";
     String secondPageUrl = "https://api.test.com/ergast/f1/2023/results.json?limit=30&offset=30";
 
-    when(restTemplate.getForEntity(eq(firstPageUrl), eq(ResultsByYearResponse.class)))
+    when(rateLimitedApiClient.executeRateLimitedRequest(
+            eq(firstPageUrl), eq(ResultsByYearResponse.class)))
         .thenReturn(ResponseEntity.ok(firstPageResponse));
 
-    when(restTemplate.getForEntity(eq(secondPageUrl), eq(ResultsByYearResponse.class)))
+    when(rateLimitedApiClient.executeRateLimitedRequest(
+            eq(secondPageUrl), eq(ResultsByYearResponse.class)))
         .thenReturn(ResponseEntity.ok(secondPageResponse));
 
     List<RaceWinner> result = service.getRaceWinners(2023);
 
-    assertEquals(2, result.size());
+    // Should get 32 race winners total (30 from first page + 2 from second page)
+    assertEquals(32, result.size());
     assertEquals("1", result.get(0).getRound());
-    assertEquals("2", result.get(1).getRound());
+    assertEquals("30", result.get(29).getRound());
+    assertEquals("31", result.get(30).getRound());
+    assertEquals("32", result.get(31).getRound());
 
     // Verify both pages were requested with exact URLs
-    verify(restTemplate).getForEntity(eq(firstPageUrl), eq(ResultsByYearResponse.class));
-    verify(restTemplate).getForEntity(eq(secondPageUrl), eq(ResultsByYearResponse.class));
+    verify(rateLimitedApiClient)
+        .executeRateLimitedRequest(eq(firstPageUrl), eq(ResultsByYearResponse.class));
+    verify(rateLimitedApiClient)
+        .executeRateLimitedRequest(eq(secondPageUrl), eq(ResultsByYearResponse.class));
   }
 
   @Test
@@ -225,13 +280,13 @@ class RemoteRaceWinnerSeedServiceTest {
 
     // Assert
     assertEquals(winner, result);
-    verifyNoInteractions(restTemplate);
+    verifyNoInteractions(rateLimitedApiClient);
   }
 
   @Test
   void whenCheckingCompleteData_thenReturnFalse() {
     // Remote service always returns false for hasCompleteData
     assertFalse(service.hasCompleteDataForYear(2023));
-    verifyNoInteractions(restTemplate);
+    verifyNoInteractions(rateLimitedApiClient);
   }
 }
