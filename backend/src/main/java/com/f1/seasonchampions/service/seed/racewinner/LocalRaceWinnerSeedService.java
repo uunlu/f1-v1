@@ -102,6 +102,7 @@ public class LocalRaceWinnerSeedService implements RaceWinnerSeedService {
 
     // For past years, expect at least 15 races (minimum for a typical F1 season)
     // Modern F1 seasons typically have 20-24 races
+    // This is just a simplification to avoid making one extra API call to Ergan
     return existingWinners.size() >= 15;
   }
 }

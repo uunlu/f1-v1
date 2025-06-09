@@ -10,10 +10,7 @@ import com.f1.seasonchampions.repository.ConstructorRepository;
 import com.f1.seasonchampions.repository.DriverRepository;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import com.f1.seasonchampions.service.seed.racewinner.LocalRaceWinnerSeedService;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -122,8 +119,17 @@ class LocalRaceWinnerSeedServiceTest {
 
   @Test
   void whenCheckingCompleteData_withExistingData_thenReturnTrue() {
-    when(raceWinnerRepository.findBySeasonAndOptionalRound("2023", null))
-        .thenReturn(Collections.singletonList(raceWinner2023));
+    List<RaceWinner> raceWinners = new ArrayList<RaceWinner>();
+
+    // Add 15 race winners to the list
+    for (int round = 1; round <= 15; round++) {
+      RaceWinner winner = new RaceWinner();
+      winner.setSeason("2023");
+      winner.setRound(String.valueOf(round));
+      winner.setDriver(driver);
+      raceWinners.add(winner);
+    }
+    when(raceWinnerRepository.findBySeasonAndOptionalRound("2023", null)).thenReturn(raceWinners);
 
     boolean result = service.hasCompleteDataForYear(2023);
 

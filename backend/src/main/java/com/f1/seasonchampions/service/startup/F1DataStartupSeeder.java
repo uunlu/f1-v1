@@ -33,8 +33,13 @@ public class F1DataStartupSeeder {
   public void seedHistoricalRaceData() {
     log.info("Application ready - checking if F1 data seeding is needed");
 
-    if (!this.seedingStrategy.isSeedingNeeded()) {
-      log.info("F1 data seeding not needed - database already contains race data");
+    try {
+      if (!this.seedingStrategy.isSeedingNeeded()) {
+        log.info("F1 data seeding not needed - database already contains race data");
+        return;
+      }
+    } catch (Exception e) {
+      log.error("F1 data seeding not needed - database already contains race data", e);
       return;
     }
 

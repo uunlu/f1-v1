@@ -1,11 +1,8 @@
 package com.f1.seasonchampions.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.lenient;
 
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
@@ -13,7 +10,6 @@ import com.f1.seasonchampions.model.SeasonChampion;
 import com.f1.seasonchampions.model.SeasonRangeRequest;
 import com.f1.seasonchampions.service.seed.seasonchampion.RemoteSeasonChampionSeedService;
 import java.util.List;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RemoteSeasonChampionSeedServiceTest {
   @Mock private F1ApiClient f1ApiClient;
-  @Mock private RateLimitedApiClientService rateLimitedApiClient;
 
   @InjectMocks private RemoteSeasonChampionSeedService service;
 
@@ -33,8 +28,6 @@ class RemoteSeasonChampionSeedServiceTest {
 
   @BeforeEach
   void setUp() {
-    // Rate limiter is now centralized and automatically initialized
-
     Driver driver2021 =
         Driver.builder()
             .driverId("max_verstappen")
@@ -81,14 +74,8 @@ class RemoteSeasonChampionSeedServiceTest {
             .constructor(constructor2022)
             .build();
 
-    // Mock the rate limited operation to execute the supplier directly
-    lenient()
-        .when(rateLimitedApiClient.executeRateLimitedOperation(any(Supplier.class), anyString()))
-        .thenAnswer(
-            invocation -> {
-              Supplier<SeasonChampion> supplier = invocation.getArgument(0);
-              return supplier.get();
-            });
+    // Initialize the rate limiter since @PostConstruct doesn't run in unit tests
+    service.init();
   }
 
   @Test
