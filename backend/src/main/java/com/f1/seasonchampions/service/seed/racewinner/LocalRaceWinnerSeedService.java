@@ -52,7 +52,7 @@ public class LocalRaceWinnerSeedService implements RaceWinnerSeedService {
           "Race winner already exists for season {} round {}",
           winner.getSeason(),
           winner.getRound());
-      return existingWinners.get(0);
+      return existingWinners.getFirst();
     }
 
     if (winner.getDriver() != null) {
