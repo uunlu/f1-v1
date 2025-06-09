@@ -52,7 +52,7 @@ public class LocalRaceWinnerSeedService implements RaceWinnerSeedService {
           "Race winner already exists for season {} round {}",
           winner.getSeason(),
           winner.getRound());
-      return existingWinners.get(0);
+      return existingWinners.getFirst();
     }
 
     if (winner.getDriver() != null) {
@@ -91,7 +91,18 @@ public class LocalRaceWinnerSeedService implements RaceWinnerSeedService {
   @Override
   public boolean hasCompleteDataForYear(final int year) {
     final List<RaceWinner> existingWinners = this.getRaceWinners(year);
-    // TODO: Implement proper validation based on expected number of races per season
-    return !existingWinners.isEmpty();
+
+    // For current year, we can't determine completeness until the season ends
+    final int currentYear = java.time.Year.now().getValue();
+    if (year == currentYear) {
+      // For current year, consider incomplete unless it's December and we have 20+ races
+      final int currentMonth = java.time.LocalDate.now().getMonthValue();
+      return currentMonth == 12 && existingWinners.size() >= 20;
+    }
+
+    // For past years, expect at least 15 races (minimum for a typical F1 season)
+    // Modern F1 seasons typically have 20-24 races
+    // This is just a simplification to avoid making one extra API call to Ergan
+    return existingWinners.size() >= 15;
   }
 }

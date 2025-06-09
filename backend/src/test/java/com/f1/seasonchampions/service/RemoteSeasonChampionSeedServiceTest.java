@@ -28,8 +28,6 @@ class RemoteSeasonChampionSeedServiceTest {
 
   @BeforeEach
   void setUp() {
-    service.init(); // Initialize rate limiter
-
     Driver driver2021 =
         Driver.builder()
             .driverId("max_verstappen")
@@ -75,6 +73,9 @@ class RemoteSeasonChampionSeedServiceTest {
             .driver(driver2022)
             .constructor(constructor2022)
             .build();
+
+    // Initialize the rate limiter since @PostConstruct doesn't run in unit tests
+    service.init();
   }
 
   @Test

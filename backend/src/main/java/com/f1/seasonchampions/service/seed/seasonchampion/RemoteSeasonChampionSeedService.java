@@ -13,13 +13,17 @@ import java.util.List;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class RemoteSeasonChampionSeedService implements SeasonChampionSeedService {
   private static final int TIMEOUT_IN_SECOND = 5;
+  private static final int RETRY_BACKOFF_DELAY_MS = 3000;
 
   private final F1ApiClient f1ApiClient;
   private RateLimiter rateLimiter;
@@ -29,17 +33,19 @@ public class RemoteSeasonChampionSeedService implements SeasonChampionSeedServic
     // Configure rate limiter
     final RateLimiterConfig config =
         RateLimiterConfig.custom()
-            .limitRefreshPeriod(Duration.ofSeconds(1))
-            .limitForPeriod(1)
-            .timeoutDuration(
-                Duration.ofSeconds(
-                    TIMEOUT_IN_SECOND)) // Magic number warning intentionally not fixed
+            .limitRefreshPeriod(Duration.ofSeconds(3))
+            .limitForPeriod(3)
+            .timeoutDuration(Duration.ofSeconds(TIMEOUT_IN_SECOND))
             .build();
 
     final RateLimiterRegistry registry = RateLimiterRegistry.of(config);
     this.rateLimiter = registry.rateLimiter("apiRateLimiter");
   }
 
+  @Retryable(
+      value = RestClientException.class,
+      maxAttempts = 3,
+      backoff = @Backoff(delay = RETRY_BACKOFF_DELAY_MS, multiplier = 2))
   @Override
   public List<SeasonChampion> getSeasonChampions(final SeasonRangeRequest request) {
     log.info(

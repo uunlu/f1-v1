@@ -33,3 +33,8 @@ f1:
   season:
     total-races: 23
     end-month: 12
+    start-year: 2005
+  seasonchampions:
+    startup:
+      seeding:
+        enabled: true

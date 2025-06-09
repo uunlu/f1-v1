@@ -5,64 +5,34 @@ import com.f1.seasonchampions.dto.ResultsByYearResponse;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.RaceWinner;
-import io.github.resilience4j.ratelimiter.RateLimiter;
-import io.github.resilience4j.ratelimiter.RateLimiterConfig;
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
-import jakarta.annotation.PostConstruct;
+import com.f1.seasonchampions.service.RateLimitedApiClientService;
 import jakarta.validation.constraints.NotNull;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
-  private static final int MAX_PAGES = 50;
-  private static final int MAX_TOTAL = 1000;
-  private static final int DEFAULT_LIMIT = 30;
-  private static final int RETRY_BACKOFF_DELAY_MS = 1000;
-  private static final int TIMEOUT_IN_SECOND = 5;
 
-  private final RestTemplate restTemplate;
-  private RateLimiter rateLimiter;
+  private final RateLimitedApiClientService rateLimitedApiClient;
 
   @Value("${f1.api.base-url:https://api.jolpi.ca/ergast/f1}")
   private String apiBaseUrl;
-
-  @PostConstruct
-  public void init() {
-    final RateLimiterConfig config =
-        RateLimiterConfig.custom()
-            .limitRefreshPeriod(Duration.ofSeconds(1))
-            .limitForPeriod(1)
-            .timeoutDuration(Duration.ofSeconds(TIMEOUT_IN_SECOND))
-            .build();
-
-    final RateLimiterRegistry registry = RateLimiterRegistry.of(config);
-    this.rateLimiter = registry.rateLimiter("raceWinnerApiRateLimiter");
-  }
 
   @Override
   public List<RaceWinner> getRaceWinners(final int year) {
     log.info("Fetching race winners from remote API for year: {}", year);
 
-    final Supplier<List<RaceWinner>> rateLimitedCall =
-        RateLimiter.decorateSupplier(this.rateLimiter, () -> this.fetchRaceWinnersForYear(year));
-
     try {
-      return rateLimitedCall.get();
+      return this.fetchRaceWinnersForYear(year);
     } catch (final Exception e) {
       log.error("Failed to fetch race winners for year {}: {}", year, e.getMessage());
       return Collections.emptyList();
@@ -79,59 +49,64 @@ public class RemoteRaceWinnerSeedService implements RaceWinnerSeedService {
     return false; // Remote service always attempts to fetch fresh data
   }
 
-  @Retryable(
-      value = RestClientException.class,
-      maxAttempts = 3,
-      backoff = @Backoff(delay = RETRY_BACKOFF_DELAY_MS, multiplier = 2))
   private List<RaceWinner> fetchRaceWinnersForYear(final int year) {
-    int offset = 0;
-    final int limit = DEFAULT_LIMIT;
-    int total = Integer.MAX_VALUE;
     final List<RaceWinner> allWinners = new ArrayList<>();
-    int pageCount = 0;
+    int round = 1;
+    int consecutiveEmptyRounds = 0;
+    final int maxConsecutiveEmptyRounds = 3; // Stop after 3 consecutive empty rounds
 
-    while (offset < total && pageCount < MAX_PAGES) {
-      final String url =
-          String.format(
-              "%s/%d/results.json?limit=%d&offset=%d", this.apiBaseUrl, year, limit, offset);
-      log.debug("Fetching race results from URL: {}", url);
+    log.info("Starting round-by-round fetching for year {}", year);
 
-      final ResponseEntity<ResultsByYearResponse> response;
+    while (consecutiveEmptyRounds < maxConsecutiveEmptyRounds && round <= 30) {
+      final String url = String.format("%s/%d/%d/results.json", this.apiBaseUrl, year, round);
+
+      log.debug("Fetching round {} from URL: {}", round, url);
+
       try {
-        response = this.restTemplate.getForEntity(url, ResultsByYearResponse.class);
-      } catch (final RestClientException e) {
-        log.error("Request failed at offset {}: {}", offset, e.getMessage());
-        break;
-      }
+        final ResponseEntity<ResultsByYearResponse> response =
+            this.rateLimitedApiClient.executeRateLimitedRequest(url, ResultsByYearResponse.class);
 
-      final ResultsByYearResponse result = response.getBody();
-      if (result == null
-          || result.getMrData() == null
-          || result.getMrData().getRaceTable() == null) {
-        log.warn("Invalid or empty response at offset {}", offset);
-        break;
-      }
+        final ResultsByYearResponse result = response.getBody();
+        if (result == null
+            || result.getMrData() == null
+            || result.getMrData().getRaceTable() == null
+            || result.getMrData().getRaceTable().getRaces() == null
+            || result.getMrData().getRaceTable().getRaces().isEmpty()) {
+          log.debug("No race data found for round {} in year {}", round, year);
+          consecutiveEmptyRounds++;
+        } else {
+          // Reset counter when we find data
+          consecutiveEmptyRounds = 0;
 
-      if (total == Integer.MAX_VALUE) {
-        try {
-          total = Math.min(Integer.parseInt(result.getMrData().getTotal()), MAX_TOTAL);
-        } catch (final NumberFormatException e) {
-          log.error("Could not parse total value: {}", result.getMrData().getTotal());
-          break;
+          final List<Race> races = result.getMrData().getRaceTable().getRaces();
+          log.debug("Received {} races for round {} in year {}", races.size(), round, year);
+
+          final List<RaceWinner> winners =
+              races.stream().map(this::mapToRaceWinner).flatMap(List::stream).toList();
+
+          allWinners.addAll(winners);
+
+          log.debug(
+              "Round {} completed for year {}. Winners so far: {}", round, year, allWinners.size());
         }
+
+      } catch (final RestClientException e) {
+        log.debug(
+            "Request failed for round {} in year {}: {} - trying next round",
+            round,
+            year,
+            e.getMessage());
+        consecutiveEmptyRounds++;
       }
 
-      final List<RaceWinner> winners =
-          result.getMrData().getRaceTable().getRaces().stream()
-              .map(this::mapToRaceWinner)
-              .flatMap(List::stream)
-              .toList();
-
-      allWinners.addAll(winners);
-      offset += limit;
-      pageCount++;
+      round++; // Always move to next round
     }
 
+    log.info(
+        "Round-by-round fetching completed for year {}. Total winners fetched: {} from {} rounds checked",
+        year,
+        allWinners.size(),
+        round - 1);
     return allWinners;
   }
 

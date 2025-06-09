@@ -1,5 +1,7 @@
 package com.f1.seasonchampions.model;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,6 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "constructors")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Constructor {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
