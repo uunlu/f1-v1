@@ -12,6 +12,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   redis:
     image: redis:7
@@ -21,6 +23,47 @@ services:
     volumes:
       - redis-data:/data
     command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - app-network
+
+  app:
+    # For local development, build from source:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    # For production, you can use the Docker Hub image instead:
+    # image: ugurunlu/f1-app-v1:stable
+    container_name: f1-season-champions-app
+    environment:
+      # Database configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/myapp
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      
+      # Redis configuration - points to Redis container
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      
+      # Spring profiles
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+    # Health check to ensure app is ready
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres-data:
