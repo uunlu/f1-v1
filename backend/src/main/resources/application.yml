@@ -41,3 +41,11 @@ f1:
     startup:
       seeding:
         enabled: true
+
+# CORS configuration for different environments
+cors:
+  allowed-origins: \${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173}
+  allowed-methods: \${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
+  allowed-headers: "*"
+  allow-credentials: true
+  max-age: 3600
