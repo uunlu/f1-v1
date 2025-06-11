@@ -2,7 +2,7 @@ package com.f1.seasonchampions.service.scheduler;
 
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.dto.ResultsByYearResponse;
+import com.f1.seasonchampions.dto.generated.ResultsByYearResponse;
 import com.f1.seasonchampions.model.*;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import com.f1.seasonchampions.service.RateLimitedApiClientService;

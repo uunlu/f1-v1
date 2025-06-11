@@ -3,7 +3,7 @@ package com.f1.seasonchampions.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.dto.*;
+import com.f1.seasonchampions.dto.generated.*;
 import com.f1.seasonchampions.model.SeasonChampion;
 import java.util.ArrayList;
 import java.util.List;

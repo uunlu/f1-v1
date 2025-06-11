@@ -3,7 +3,7 @@ package com.f1.seasonchampions.service.racewinner;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.dto.ResultsByYearResponse;
+import com.f1.seasonchampions.dto.generated.ResultsByYearResponse;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import com.f1.seasonchampions.service.RateLimitedApiClientService;

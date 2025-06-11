@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.dto.*;
+import com.f1.seasonchampions.dto.generated.*;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.repository.RaceWinnerRepository;
 import java.time.LocalDate;

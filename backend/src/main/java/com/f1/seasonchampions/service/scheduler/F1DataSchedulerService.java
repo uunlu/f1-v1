@@ -1,8 +1,8 @@
 package com.f1.seasonchampions.service.scheduler;
 
-import com.f1.seasonchampions.dto.Race;
 import com.f1.seasonchampions.dto.RaceSyncResult;
-import com.f1.seasonchampions.dto.ResultsByYearResponse;
+import com.f1.seasonchampions.dto.generated.Race;
+import com.f1.seasonchampions.dto.generated.ResultsByYearResponse;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.Driver;
 import com.f1.seasonchampions.model.RaceWinner;

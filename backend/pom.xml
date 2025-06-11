@@ -268,7 +268,7 @@
             </goals>
             <configuration>
               <inputSpec>${project.basedir}/src/main/resources/ergan-openapi.yml</inputSpec>
-              <modelPackage>com.f1.seasonchampions.dto</modelPackage>
+              <modelPackage>com.f1.seasonchampions.dto.generated</modelPackage>
               <generatorName>spring</generatorName>
               <generateApis>false</generateApis>
               <generateModels>true</generateModels>
