@@ -1,0 +1,3 @@
+[submodule "ios-app"]
+	path = ios-app
+	url = https://github.com/uunlu/f1-ios
