@@ -5,17 +5,20 @@ import com.f1.seasonchampions.dto.RaceWinnerSeasonResponse;
 import com.f1.seasonchampions.dto.SeasonChampionListItem;
 import com.f1.seasonchampions.service.query.racewinner.RaceWinnerQueryService;
 import com.f1.seasonchampions.service.query.seasonchampion.SeasonChampionQueryService;
+import com.f1.seasonchampions.validation.CurrentYearConstraint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
     name = "F1 Public API",
     description = "Public APIs for retrieving F1 race winners and season information")
 @RequiredArgsConstructor
+@Validated
 public class FormulaOneController {
 
   private final RaceWinnerQueryService raceWinnerQueryService;
@@ -46,7 +50,10 @@ public class FormulaOneController {
       })
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<List<RaceWinnerListItem>> getRaceWinnersBySeason(
-      @Parameter(description = "Year of the F1 season (e.g., 2022)") @PathVariable
+      @Parameter(description = "Year of the F1 season (e.g., 2022)")
+          @PathVariable
+          @Min(value = 2005, message = "Season must be 2005 or later")
+          @CurrentYearConstraint
           final int season) {
 
     log.info("Received public request for race winners of season {}", season);
@@ -74,7 +81,10 @@ public class FormulaOneController {
       })
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<RaceWinnerSeasonResponse> getRaceWinnersWithMetadata(
-      @Parameter(description = "Year of the F1 season (e.g., 2022)") @PathVariable
+      @Parameter(description = "Year of the F1 season (e.g., 2022)")
+          @PathVariable
+          @Min(value = 2005, message = "Season must be 2005 or later")
+          @CurrentYearConstraint
           final int season) {
 
     log.info("Received public request for race winners with metadata for season {}", season);
