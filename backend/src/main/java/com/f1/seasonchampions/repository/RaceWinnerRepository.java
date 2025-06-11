@@ -3,6 +3,7 @@ package com.f1.seasonchampions.repository;
 import com.f1.seasonchampions.dto.RaceWinnerListItem;
 import com.f1.seasonchampions.model.RaceWinner;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,6 +36,9 @@ public interface RaceWinnerRepository extends JpaRepository<RaceWinner, Long> {
     ORDER BY CAST(rw.round AS integer)
     """)
   List<RaceWinnerListItem> findRaceWinnersWithConstructors(@Param("season") String season);
+
+  @Query("SELECT MAX(CAST(rw.round AS integer)) FROM RaceWinner rw WHERE rw.season = :season")
+  Optional<Integer> findMaxRoundByYear(@Param("season") String season);
 
   default List<RaceWinner> getRaceWinnerBySeason(String season) {
     return this.findBySeasonAndOptionalRound(season, null);
