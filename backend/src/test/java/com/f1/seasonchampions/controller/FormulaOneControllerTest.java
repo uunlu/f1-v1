@@ -191,9 +191,9 @@ class FormulaOneControllerTest {
   void getAllSeasons_whenSeasonsExist_returnsOkWithSeasons() {
     // Arrange
     SeasonChampionListItem season1 =
-        new SeasonChampionListItemImpl("2022", "Max Verstappen", "Red Bull");
+        new SeasonChampionListItemImpl("2022", "Max Verstappen", "Red Bull", true);
     SeasonChampionListItem season2 =
-        new SeasonChampionListItemImpl("2023", "Max Verstappen", "Red Bull");
+        new SeasonChampionListItemImpl("2023", "Max Verstappen", "Red Bull", false);
     List<SeasonChampionListItem> seasons = List.of(season1, season2);
 
     when(seasonChampionQueryService.getAllSeasons()).thenReturn(seasons);
@@ -209,7 +209,9 @@ class FormulaOneControllerTest {
     assertEquals("2022", response.getBody().get(0).getSeason());
     assertEquals("Max Verstappen", response.getBody().get(0).getDriver());
     assertEquals("Red Bull", response.getBody().get(0).getConstructor());
+    assertTrue(response.getBody().get(0).isCompleted());
     assertEquals("2023", response.getBody().get(1).getSeason());
+    assertFalse(response.getBody().get(1).isCompleted());
 
     verify(seasonChampionQueryService).getAllSeasons();
   }
@@ -235,11 +237,11 @@ class FormulaOneControllerTest {
   void getAllSeasons_withMultipleSeasons_returnsAllInOrder() {
     // Arrange
     SeasonChampionListItem season1 =
-        new SeasonChampionListItemImpl("2020", "Lewis Hamilton", "Mercedes");
+        new SeasonChampionListItemImpl("2020", "Lewis Hamilton", "Mercedes", true);
     SeasonChampionListItem season2 =
-        new SeasonChampionListItemImpl("2021", "Max Verstappen", "Red Bull");
+        new SeasonChampionListItemImpl("2021", "Max Verstappen", "Red Bull", true);
     SeasonChampionListItem season3 =
-        new SeasonChampionListItemImpl("2022", "Max Verstappen", "Red Bull");
+        new SeasonChampionListItemImpl("2022", "Max Verstappen", "Red Bull", true);
     List<SeasonChampionListItem> seasons = List.of(season1, season2, season3);
 
     when(seasonChampionQueryService.getAllSeasons()).thenReturn(seasons);
@@ -256,14 +258,17 @@ class FormulaOneControllerTest {
     assertEquals("2020", response.getBody().get(0).getSeason());
     assertEquals("Lewis Hamilton", response.getBody().get(0).getDriver());
     assertEquals("Mercedes", response.getBody().get(0).getConstructor());
+    assertTrue(response.getBody().get(0).isCompleted());
 
     assertEquals("2021", response.getBody().get(1).getSeason());
     assertEquals("Max Verstappen", response.getBody().get(1).getDriver());
     assertEquals("Red Bull", response.getBody().get(1).getConstructor());
+    assertTrue(response.getBody().get(1).isCompleted());
 
     assertEquals("2022", response.getBody().get(2).getSeason());
     assertEquals("Max Verstappen", response.getBody().get(2).getDriver());
     assertEquals("Red Bull", response.getBody().get(2).getConstructor());
+    assertTrue(response.getBody().get(2).isCompleted());
 
     verify(seasonChampionQueryService).getAllSeasons();
   }

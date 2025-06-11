@@ -1,7 +1,7 @@
 package com.f1.seasonchampions.service;
 
-import com.f1.seasonchampions.dto.Driver;
-import com.f1.seasonchampions.dto.DriverStandingsByYearResponse;
+import com.f1.seasonchampions.dto.generated.Driver;
+import com.f1.seasonchampions.dto.generated.DriverStandingsByYearResponse;
 import com.f1.seasonchampions.model.Constructor;
 import com.f1.seasonchampions.model.SeasonChampion;
 import jakarta.annotation.Nullable;

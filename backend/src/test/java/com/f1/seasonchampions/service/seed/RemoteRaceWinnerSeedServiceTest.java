@@ -3,7 +3,7 @@ package com.f1.seasonchampions.service.seed;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.f1.seasonchampions.dto.*;
+import com.f1.seasonchampions.dto.generated.*;
 import com.f1.seasonchampions.model.RaceWinner;
 import com.f1.seasonchampions.service.RateLimitedApiClientService;
 import com.f1.seasonchampions.service.seed.racewinner.RemoteRaceWinnerSeedService;
@@ -47,12 +47,12 @@ class RemoteRaceWinnerSeedServiceTest {
     resultTime.setTime("1:30.123"); // Add the missing time value
     result.setTime(resultTime);
 
-    var constructor = new com.f1.seasonchampions.dto.Constructor();
+    var constructor = new Constructor();
     constructor.setConstructorId("red_bull");
     constructor.setName("Red Bull Racing");
     constructor.setNationality("Austrian");
 
-    var driver = new com.f1.seasonchampions.dto.Driver();
+    var driver = new Driver();
     driver.setDriverId("max_verstappen");
     driver.setPermanentNumber("33");
     driver.setCode("VER");
