@@ -39,6 +39,9 @@ public class F1DataSchedulerService {
   @Value("${f1.season.start-year:2005}")
   private int startYear;
 
+  @Value("${f1.season.end-year:#{T(java.time.Year).now().getValue()}}")
+  private int endYear;
+
   @Value("${f1.api.base-url:https://api.jolpi.ca/ergast/f1}")
   private String apiBaseUrl;
 
@@ -55,7 +58,10 @@ public class F1DataSchedulerService {
 
   @PostConstruct
   public void init() {
-    log.info("F1DataSchedulerService initialized with start year: {}", this.startYear);
+    log.info(
+        "F1DataSchedulerService initialized with start year: {}, end year: {}",
+        this.startYear,
+        this.endYear);
     log.info("Using race winner service: {}", this.raceWinnerService.getClass().getSimpleName());
   }
 
@@ -169,17 +175,15 @@ public class F1DataSchedulerService {
    */
   @Transactional
   public RaceSyncResult syncAllHistoricalRaces() {
-    final int currentYear = Year.now().getValue();
-    final int historicalStartYear = 2005;
-    log.info("Starting historical race sync from {} to {}", historicalStartYear, currentYear);
+    log.info("Starting historical race sync from {} to {}", this.startYear, this.endYear);
 
     final List<String> allUpdatedRaces = new ArrayList<>();
     int totalUpdates = 0;
     boolean overallSuccess = true;
 
     try {
-      // Simple for loop from 2005 to current year
-      for (int year = historicalStartYear; year <= currentYear; year++) {
+      // Simple for loop from start year to end year
+      for (int year = this.startYear; year <= this.endYear; year++) {
         log.info("Syncing races for year {}", year);
 
         try {

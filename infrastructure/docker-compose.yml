@@ -48,6 +48,11 @@ services:
       # CORS configuration
       CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:4200,http://localhost:5173,http://host.docker.internal:3000,http://host.docker.internal:4200,http://host.docker.internal:5173"
 
+      # F1 Data Seeding Configuration (optional - defaults: start=2005, end=current year)
+      # Uncomment and modify these lines to override the defaults:
+      # F1_SEASON_START_YEAR: 2022
+      # F1_SEASON_END_YEAR: 2024
+
     ports:
       - "8080:8080"
     depends_on:
