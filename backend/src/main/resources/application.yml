@@ -8,6 +8,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
@@ -17,6 +18,34 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: true
     baseline-on-migrate: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
 
 f1api:
   base-url: https://ergast.com/api/f1
+
+f1:
+  season:
+    total-races: 23
+    end-month: 12
+    start-year: 2005
+  seasonchampions:
+    startup:
+      seeding:
+        enabled: true
+
+# CORS configuration for different environments
+cors:
+  allowed-origins: \${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173}
+  allowed-methods: \${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
+  allowed-headers: "*"
+  allow-credentials: true
+  max-age: 3600

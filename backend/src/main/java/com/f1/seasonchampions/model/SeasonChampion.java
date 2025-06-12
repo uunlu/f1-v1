@@ -1,6 +1,7 @@
 package com.f1.seasonchampions.model;
 
-import jakarta.persistence.CascadeType;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -17,15 +18,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SeasonChampion {
 
   @Id private String season;
 
-  @ManyToOne(cascade = CascadeType.ALL)
+  @ManyToOne
   @JoinColumn(name = "driver_id")
   private Driver driver;
 
-  @ManyToOne(cascade = CascadeType.ALL)
-  @JoinColumn(name = "id", referencedColumnName = "id")
+  @ManyToOne
+  @JoinColumn(name = "constructor_id", referencedColumnName = "constructor_id")
   private Constructor constructor;
 }

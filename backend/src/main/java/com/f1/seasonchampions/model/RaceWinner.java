@@ -1,5 +1,7 @@
 package com.f1.seasonchampions.model;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +22,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class RaceWinner {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +36,7 @@ public class RaceWinner {
   private Driver driver;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "constructor_id", referencedColumnName = "id")
+  @JoinColumn(name = "constructor_id", referencedColumnName = "constructor_id")
   private Constructor constructor;
 
   private String time;

@@ -1,0 +1,20 @@
+### GET request to example server
+GET http://localhost:8080/api/results?year=2021
+
+###
+GET http://localhost:8080/api/season-champions?startYear=2024&endYear=2025
+
+###
+GET http://localhost:8080/api/seasons
+
+### List race winner for season
+GET http://localhost:8080/api/f1/race-winners/2019
+
+### List all seasons
+GET http://localhost:8080/api/v1/f1/seasons
+
+### Sync race results
+POST http://localhost:8080/api/internal/sync-latest-race-results
+
+### Sync season results
+POST http://localhost:8080/api/internal/sync-season-champions
