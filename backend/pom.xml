@@ -28,7 +28,7 @@
     <spotbugs-maven-plugin.version>4.8.5.0</spotbugs-maven-plugin.version>
     <spotbugs.version>4.8.5</spotbugs.version>
     <fmt-maven-plugin.version>2.23</fmt-maven-plugin.version>
-    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
+    <spotless-maven-plugin.version>2.44.5</spotless-maven-plugin.version>
     <docker.image.prefix>${project.groupId}/${project.artifactId}
     </docker.image.prefix> <!-- Added for Docker image naming -->
   </properties>
