@@ -75,13 +75,13 @@ jobs:
 
           # Set different tags based on branch
           if [ "$BRANCH_NAME" = "main" ]; then
-            # For main branch: stable, main-sha
-            echo "DOCKER_TAGS=ugurunlu/f1-app-v1:stable,ugurunlu/f1-app-v1:main-${SHORT_SHA}" >> $GITHUB_ENV
-            echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:stable" >> $GITHUB_ENV
+            # For main branch: latest, stable, main-sha
+            echo "DOCKER_TAGS=ugurunlu/f1-app-v1:latest,ugurunlu/f1-app-v1:stable,ugurunlu/f1-app-v1:main-${SHORT_SHA}" >> $GITHUB_ENV
+            echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:latest" >> $GITHUB_ENV
           elif [ "$BRANCH_NAME" = "develop" ]; then
-            # For develop branch: latest, dev-sha
-            echo "DOCKER_TAGS=ugurunlu/f1-app-v1:dev-${SHORT_SHA}" >> $GITHUB_ENV
-            echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:dev-${SHORT_SHA}" >> $GITHUB_ENV
+            # For develop branch: dev-latest, dev-sha
+            echo "DOCKER_TAGS=ugurunlu/f1-app-v1:dev-latest,ugurunlu/f1-app-v1:dev-${SHORT_SHA}" >> $GITHUB_ENV
+            echo "IMAGE_FOR_SCAN=ugurunlu/f1-app-v1:dev-latest" >> $GITHUB_ENV
           else
             # For other branches/PRs: branch-name-timestamp
             # Replace slashes and other invalid characters in branch name
@@ -102,12 +102,29 @@ jobs:
           push: true
           tags: ${{ env.DOCKER_TAGS }}
           platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      # Verify the image exists before scanning
+      # Verify the image exists before scanning (with retry and platform fallback)
       - name: Verify Docker Image Exists
         run: |
           echo "Waiting for image to be available..."
-          docker pull ${{ env.IMAGE_FOR_SCAN }}
+          
+          # Try to pull the image with retries
+          for i in {1..5}; do
+            echo "Attempt $i: Pulling image ${{ env.IMAGE_FOR_SCAN }}"
+            if docker pull ${{ env.IMAGE_FOR_SCAN }}; then
+              echo "Successfully pulled image"
+              break
+            else
+              echo "Pull failed, waiting 30 seconds before retry..."
+              sleep 30
+              if [ $i -eq 5 ]; then
+                echo "Failed to pull image after 5 attempts"
+                exit 1
+              fi
+            fi
+          done
 
       # Run security scan on the appropriate tagged image
       - name: Run Container Security Scan with Trivy
@@ -117,3 +134,6 @@ jobs:
           format: 'table'
           exit-code: '1'
           severity: 'HIGH,CRITICAL'
+        env:
+          # Force AMD64 platform for scanning if ARM64 causes issues
+          TRIVY_PLATFORM: 'linux/amd64'
